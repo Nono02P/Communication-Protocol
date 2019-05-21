@@ -72,14 +72,14 @@ namespace CommunicationProtocol
             return result;
         }
 
-        public void WriteValue(uint pValue, int pNbOfBits)
+        public void WriteValue(uint pValue, uint pNbOfBits)
         {
             if (_buffer == null)
                 _buffer = new List<uint>();
             if (pNbOfBits > 32)
-                pNbOfBits = 32;
-            _temp |= (ulong)(pValue & (uint.MaxValue >> (32 - pNbOfBits))) << BitIndex;
-            BitIndex += pNbOfBits;
+                throw new Exception("Impossible to write a 32 bit type on more than 32 bits.");
+            _temp |= (ulong)(pValue & (uint.MaxValue >> (32 - (int)pNbOfBits))) << BitIndex;
+            BitIndex += (int)pNbOfBits;
             while (BitIndex > BUFFER_BIT_SIZE)
             {
                 PushTempInBuffer();
