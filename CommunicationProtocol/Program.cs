@@ -7,6 +7,20 @@ namespace CommunicationProtocol
     {
         static void Main(string[] args)
         {
+            Serializer sender = new WriterSerialize();
+            PacketA sendedPacket = new PacketA() { x = -31, y = 50, z = 150, f = 100.21f, comment = "Je suis un test." };
+            bool sendingAuthorized = sendedPacket.Serialize(sender);
+            sender.dBitPacking.PushTempInBuffer();
+
+            Serializer receiver = new ReaderSerialize();
+            receiver.dBitPacking = sender.dBitPacking;
+            PacketA receivedPacket = new PacketA();
+            bool isValid = receivedPacket.Serialize(receiver);
+            Console.Read();
+        }
+
+        static void Tests(string[] args)
+        {
             // Sender side
             // ============================================================================================
             BitPacking bufferSender = new BitPacking();
@@ -120,6 +134,6 @@ namespace CommunicationProtocol
             }
         }
         */
-        
+
     }
 }

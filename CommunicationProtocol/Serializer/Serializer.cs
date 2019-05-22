@@ -5,8 +5,14 @@ namespace CommunicationProtocol
 {
     public abstract class Serializer
     {
-        protected BitPacking dBitPacking;
+        public BitPacking dBitPacking;
 
+        public Serializer(int pByteBufferSize)
+        {
+            dBitPacking = new BitPacking(pByteBufferSize);
+        }
+
+        public abstract void ManageData(byte[] pData);
         public abstract bool Serialize(ref bool pResult, ref int pValue, int pMin, int pMax);
         public abstract bool Serialize(ref bool pResult, ref string pValue, int pLengthMax);
 
@@ -35,6 +41,8 @@ namespace CommunicationProtocol
             }
             return pResult;
         }
+
+        public abstract bool EndOfPacket(ref bool pResult, ref int pCheckValue, int pNbOfBits);
 
         protected uint BitsRequired(int pMin, int pMax)
         {

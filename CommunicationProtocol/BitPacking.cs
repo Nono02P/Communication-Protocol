@@ -21,6 +21,14 @@ namespace CommunicationProtocol
         #endregion
 
         #region Constructeur
+        public BitPacking(int pByteBufferSize)
+        {
+            _buffer = new List<uint>(pByteBufferSize);
+            _temp = 0;
+            BitIndex = 0;
+            WordIndex = 0;
+        }
+
         public BitPacking(List<uint> pBuffer, int pBitLength)
         {
             _buffer = pBuffer;
