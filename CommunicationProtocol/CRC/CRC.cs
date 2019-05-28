@@ -76,17 +76,17 @@ namespace CRC
             {
                 for (int i = offset; i < offset + length; i++)
                 {
-                    crc = (_table[(crc ^ data[i]) & 0xFF] ^ (crc >> 8));
+                    crc = _table[(crc ^ data[i]) & 0xFF] ^ (crc >> 8);
                     crc &= _mask;
                 }
             }
             else
             {
-                int toRight = (HashSize - 8);
+                int toRight = HashSize - 8;
                 toRight = toRight < 0 ? 0 : toRight;
                 for (int i = offset; i < offset + length; i++)
                 {
-                    crc = (_table[((crc >> toRight) ^ data[i]) & 0xFF] ^ (crc << 8));
+                    crc = _table[((crc >> toRight) ^ data[i]) & 0xFF] ^ (crc << 8);
                     crc &= _mask;
                 }
             }
@@ -107,14 +107,14 @@ namespace CRC
             if (Parameters.RefIn)
                 r = CrcHelper.ReverseBits(r, HashSize);
             else if (HashSize > 8)
-                r <<= (HashSize - 8);
+                r <<= HashSize - 8;
 
-            ulong lastBit = (1ul << (HashSize - 1));
+            ulong lastBit = 1ul << (HashSize - 1);
             
             for (int i = 0; i < 8; i++)
             {
                 if ((r & lastBit) != 0)
-                    r = ((r << 1) ^ Parameters.Poly);
+                    r = (r << 1) ^ Parameters.Poly;
                 else
                     r <<= 1;
             }

@@ -52,12 +52,6 @@ namespace CommunicationProtocol
         }
         #endregion
 
-        private Span<uint> GetSpanBuffer()
-        {
-            int start = _offsetBitReaded / BUFFER_BIT_SIZE;
-            return new Span<uint>(_buffer, start, (int)Math.Ceiling((decimal)BitLength / BUFFER_BIT_SIZE) - start);
-        }
-
         #region Remplissage buffer
         public static BitPacker FromArray(byte[] pBuffer, bool pPushTempInBuffer = true)
         {
@@ -66,7 +60,7 @@ namespace CommunicationProtocol
             int nbOfBytePerBufferElement = BUFFER_BIT_SIZE / 8;
             int length = (int)Math.Ceiling((double)pBuffer.Length / nbOfBytePerBufferElement);
             result.WordIndex = (int)Math.Floor((double)pBuffer.Length / nbOfBytePerBufferElement);
-            result.BitIndex = (pBuffer.Length * 8) % BUFFER_BIT_SIZE;
+            result.BitIndex = pBuffer.Length * 8 % BUFFER_BIT_SIZE;
             for (int i = 0; i < length; i++)
             {
                 bool shouldBeAdded = true;
@@ -97,7 +91,8 @@ namespace CommunicationProtocol
                 _buffer = new uint[DEFAULT_BUFFER_SIZE];
             if (pNbOfBits > 32)
                 throw new Exception("Impossible to write a 32 bit type on more than 32 bits.");
-            _temp |= (ulong)(pValue & (uint.MaxValue >> (32 - pNbOfBits))) << BitIndex;
+            ulong maskNbOfBits = (1ul << pNbOfBits) - 1;
+            _temp |= (pValue & maskNbOfBits) << BitIndex;
             BitIndex += pNbOfBits;
             while (BitIndex > BUFFER_BIT_SIZE)
             {
@@ -149,14 +144,15 @@ namespace CommunicationProtocol
                     uint startingVal = 0;
                     if (start > 0)
                     {
-                        startingVal = spanBuffer[bufferWordIndex] & (uint.MaxValue >> (32 - start));
+                        startingVal = spanBuffer[bufferWordIndex] & (uint)((1ul << start) -1);
                     }
-                    ulong result = (spanBuffer[bufferWordIndex] & (uint.MaxValue >> (32 - pNbOfBits)) << start) >> start;
+                    uint maskNbOfBits = (uint)((1ul << pNbOfBits) - 1);
+                    ulong result = (spanBuffer[bufferWordIndex] & maskNbOfBits << start) >> start;
                     // Si la valeur a lire se chevauche sur deux registres.
                     if (BUFFER_BIT_SIZE < start + pNbOfBits && bufferWordIndex + 1 < spanBuffer.Length)
                     {
-                        int s = (start - 32 + pNbOfBits);
-                        result |= (spanBuffer[bufferWordIndex + 1] & (uint.MaxValue >> (32 - s))) << (pNbOfBits - s);
+                        int s = start - 32 + pNbOfBits;
+                        result |= (spanBuffer[bufferWordIndex + 1] & ((1ul << s) - 1)) << (pNbOfBits - s);
                     }
                     if (pRemoveBits)
                     {
@@ -165,7 +161,7 @@ namespace CommunicationProtocol
                             uint outVal = 0;
                             for (int i = spanBuffer.Length - 1; i >= bufferWordIndex; i--)
                             {
-                                uint temp = spanBuffer[i] & (uint.MaxValue >> (32 - pNbOfBits));
+                                uint temp = spanBuffer[i] & maskNbOfBits;
                                 spanBuffer[i] >>= pNbOfBits;
                                 spanBuffer[i] |= outVal << (32 - pNbOfBits);
                                 outVal = temp;
@@ -175,7 +171,7 @@ namespace CommunicationProtocol
                         {
                             _offsetBitReaded += pNbOfBits;
                         }
-                        spanBuffer[bufferWordIndex] &= (uint.MaxValue << start);
+                        spanBuffer[bufferWordIndex] &= uint.MaxValue << start;
                         spanBuffer[bufferWordIndex] |= startingVal;
                         
                         BitIndex -= pNbOfBits;
@@ -240,9 +236,10 @@ namespace CommunicationProtocol
             return result;
         }
 
-        public uint[] GetUIntBuffer()
+        public Span<uint> GetSpanBuffer()
         {
-            return _buffer;
+            int start = _offsetBitReaded / BUFFER_BIT_SIZE;
+            return new Span<uint>(_buffer, start, (int)Math.Ceiling((decimal)BitLength / BUFFER_BIT_SIZE) - start);
         }
 
         public override string ToString()
