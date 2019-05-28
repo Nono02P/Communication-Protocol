@@ -11,30 +11,29 @@ namespace CommunicationProtocol
         public override void ManageData(byte[] pData)
         {
             dBitPacking.Clear();
-            dBitPacking = BitPacking.FromArray(pData);
+            dBitPacking = BitPacker.FromArray(pData);
         }
 
         #region Serialisation
-        public override bool Serialize(ref bool pResult, ref float pValue, float pMin, float pMax, float pResolution = 1)
+        public override bool Serialize(ref int pBitCounter, ref bool pResult, ref float pValue, float pMin, float pMax, float pResolution = 1)
         {
-            base.Serialize(ref pResult, ref pValue, pMin, pMax, pResolution);
+            base.Serialize(ref pBitCounter, ref pResult, ref pValue, pMin, pMax, pResolution);
             if (pResult)
             {
                 int min = (int)((decimal)pMin / (decimal)pResolution);
                 int max = (int)((decimal)pMax / (decimal)pResolution);
-                //float value = (dBitPacking.ReadValue((int)BitsRequired(min, max)) + pMin) * pResolution;
                 int value = 0;
-                Serialize(ref pResult, ref value, min, max);
+                Serialize(ref pBitCounter, ref pResult, ref value, min, max);
                 pValue = (float)(value * (decimal)pResolution);
             }
             return pResult;
         }
 
-        public override bool Serialize(ref bool pResult, ref int pValue, int pMin, int pMax)
+        public override bool Serialize(ref int pBitCounter, ref bool pResult, ref int pValue, int pMin, int pMax)
         {
             if (pResult)
             {
-                int value = (int)dBitPacking.ReadValue((int)BitsRequired(pMin, pMax)) + pMin;
+                int value = (int)dBitPacking.ReadValue(BitsRequired(pMin, pMax)) + pMin;
                 if (value >= pMin && value <= pMax)
                     pValue = value;
                 else
@@ -43,11 +42,11 @@ namespace CommunicationProtocol
             return pResult;
         }
 
-        public override bool Serialize(ref bool pResult, ref string pValue, int pLengthMax)
+        public override bool Serialize(ref int pBitCounter, ref bool pResult, ref string pValue, int pLengthMax)
         {
             if (pResult)
             {
-                int length = (int)dBitPacking.ReadValue((int)BitsRequired(0, pLengthMax));
+                int length = (int)dBitPacking.ReadValue(BitsRequired(0, pLengthMax));
                 
                 if (length <= pLengthMax)
                 {
@@ -71,5 +70,10 @@ namespace CommunicationProtocol
             throw new NotImplementedException();
         }
         #endregion Fin de paquet
+
+        public override bool Serialize<T>(ref int pBitCounter, ref bool pResult, T pType)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

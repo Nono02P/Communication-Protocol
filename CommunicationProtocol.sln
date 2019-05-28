@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 VisualStudioVersion = 15.0.28307.489
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CommunicationProtocol", "CommunicationProtocol\CommunicationProtocol.csproj", "{9B821CDF-4567-4C8A-A3B9-89536EAF6369}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CommunicationProtocol", "CommunicationProtocol\CommunicationProtocol.csproj", "{0B353941-9A18-4F0E-8E07-40E9C4FC2C09}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -11,15 +11,15 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{9B821CDF-4567-4C8A-A3B9-89536EAF6369}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{9B821CDF-4567-4C8A-A3B9-89536EAF6369}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{9B821CDF-4567-4C8A-A3B9-89536EAF6369}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{9B821CDF-4567-4C8A-A3B9-89536EAF6369}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0B353941-9A18-4F0E-8E07-40E9C4FC2C09}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0B353941-9A18-4F0E-8E07-40E9C4FC2C09}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0B353941-9A18-4F0E-8E07-40E9C4FC2C09}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0B353941-9A18-4F0E-8E07-40E9C4FC2C09}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
-		SolutionGuid = {55710EBF-4AF3-4A83-BC50-A47E9BE6D73B}
+		SolutionGuid = {38603F11-B74A-4CF8-8B89-08FA23F2A5B4}
 	EndGlobalSection
 EndGlobal

@@ -1,5 +1,0 @@
-C:\Users\PierArn\Documents\Perso\Jeux Video\C#\CommunicationProtocol\CommunicationProtocol\bin\Release\CommunicationProtocol.exe
-C:\Users\PierArn\Documents\Perso\Jeux Video\C#\CommunicationProtocol\CommunicationProtocol\bin\Release\CommunicationProtocol.pdb
-C:\Users\PierArn\Documents\Perso\Jeux Video\C#\CommunicationProtocol\CommunicationProtocol\obj\Release\CommunicationProtocol.csproj.CoreCompileInputs.cache
-C:\Users\PierArn\Documents\Perso\Jeux Video\C#\CommunicationProtocol\CommunicationProtocol\obj\Release\CommunicationProtocol.exe
-C:\Users\PierArn\Documents\Perso\Jeux Video\C#\CommunicationProtocol\CommunicationProtocol\obj\Release\CommunicationProtocol.pdb

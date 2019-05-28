@@ -1,5 +1,6 @@
 ﻿using CRC;
 using System;
+using System.Numerics;
 
 namespace CommunicationProtocol
 {
@@ -7,23 +8,35 @@ namespace CommunicationProtocol
     {
         static void Main(string[] args)
         {
-            Serializer sender = new WriterSerialize();
-            PacketA sendedPacket = new PacketA() { x = -31, y = 50, z = 150, f = 100.21f, comment = "Je suis un test." };
-            bool sendingAuthorized = sendedPacket.Serialize(sender);
-            sender.dBitPacking.PushTempInBuffer();
-
-            Serializer receiver = new ReaderSerialize();
-            receiver.dBitPacking = sender.dBitPacking;
-            PacketA receivedPacket = new PacketA();
-            bool isValid = receivedPacket.Serialize(receiver);
+            TestSerializer();
             Console.Read();
         }
 
-        static void Tests(string[] args)
+        static void TestSerializer()
+        {
+            Serializer sender = new WriterSerialize();
+            PacketA sendedPacket = new PacketA() { Position = new Vector3(-29.158f, 50.735f, 150.2875f), f = 100.191f, comment = "Je suis CON !!" };
+            bool sendingAuthorized = sendedPacket.Serialize(sender);
+            sendedPacket = new PacketA() { Position = new Vector3(50, 100, 40), f = 45.02f, comment = "Je suis un test." };
+            sendingAuthorized |= sendedPacket.Serialize(sender);
+            sender.dBitPacking.PushTempInBuffer();
+
+            if (sendingAuthorized)
+            {
+                Serializer receiver = new ReaderSerialize();
+                receiver.dBitPacking = sender.dBitPacking;
+                PacketA receivedPacket = new PacketA();
+                PacketA receivedPacket2 = new PacketA();
+                bool isValid = receivedPacket.Serialize(receiver);
+                isValid = receivedPacket2.Serialize(receiver);
+            }
+        }
+
+        static void TestCRC()
         {
             // Sender side
             // ============================================================================================
-            BitPacking bufferSender = new BitPacking();
+            BitPacker bufferSender = new BitPacker();
             bufferSender.WriteValue(0x39, 6);
             bufferSender.WriteValue(0x2B, 6);
             Console.WriteLine("Data envoyées sans CRC :" + bufferSender.ToString());
@@ -53,12 +66,12 @@ namespace CommunicationProtocol
             */
             // Receiver side
             // ============================================================================================
-            BitPacking bufferReceiver = BitPacking.FromArray(bufferSender.GetByteBuffer());
+            BitPacker bufferReceiver = BitPacker.FromArray(bufferSender.GetByteBuffer());
             //Console.WriteLine("Réception data avec CRC :" + bufferReceiver.ToString());
 
             Crc crcReceiver = new Crc(parameters);
 
-            uint crcValue = bufferReceiver.ReadValue(crcReceiver.HashSize, true, bufferReceiver.Length - 32);
+            uint crcValue = bufferReceiver.ReadValue(crcReceiver.HashSize, true, bufferReceiver.BitLength - 32);
             Console.WriteLine("Réception data sans CRC :" + bufferReceiver.ToString());
 
             parameters.Check = crcValue;
@@ -67,8 +80,6 @@ namespace CommunicationProtocol
                 Console.WriteLine("Paquet accepté !");
             else
                 Console.WriteLine("Paquet refusé !");
-
-            Console.Read();
         }
         /*
         public static uint BitsRequired4(int pMin, int pMax)

@@ -1,0 +1,11 @@
+C:\Users\PierArn\Documents\Perso\Jeux Video\C#\CommunicationProtocol\CommunicationProtocol\bin\Debug\netcoreapp2.1\CommunicationProtocol.deps.json
+C:\Users\PierArn\Documents\Perso\Jeux Video\C#\CommunicationProtocol\CommunicationProtocol\bin\Debug\netcoreapp2.1\CommunicationProtocol.runtimeconfig.json
+C:\Users\PierArn\Documents\Perso\Jeux Video\C#\CommunicationProtocol\CommunicationProtocol\bin\Debug\netcoreapp2.1\CommunicationProtocol.runtimeconfig.dev.json
+C:\Users\PierArn\Documents\Perso\Jeux Video\C#\CommunicationProtocol\CommunicationProtocol\bin\Debug\netcoreapp2.1\CommunicationProtocol.dll
+C:\Users\PierArn\Documents\Perso\Jeux Video\C#\CommunicationProtocol\CommunicationProtocol\bin\Debug\netcoreapp2.1\CommunicationProtocol.pdb
+C:\Users\PierArn\Documents\Perso\Jeux Video\C#\CommunicationProtocol\CommunicationProtocol\obj\Debug\netcoreapp2.1\CommunicationProtocol.csprojAssemblyReference.cache
+C:\Users\PierArn\Documents\Perso\Jeux Video\C#\CommunicationProtocol\CommunicationProtocol\obj\Debug\netcoreapp2.1\CommunicationProtocol.csproj.CoreCompileInputs.cache
+C:\Users\PierArn\Documents\Perso\Jeux Video\C#\CommunicationProtocol\CommunicationProtocol\obj\Debug\netcoreapp2.1\CommunicationProtocol.AssemblyInfoInputs.cache
+C:\Users\PierArn\Documents\Perso\Jeux Video\C#\CommunicationProtocol\CommunicationProtocol\obj\Debug\netcoreapp2.1\CommunicationProtocol.AssemblyInfo.cs
+C:\Users\PierArn\Documents\Perso\Jeux Video\C#\CommunicationProtocol\CommunicationProtocol\obj\Debug\netcoreapp2.1\CommunicationProtocol.dll
+C:\Users\PierArn\Documents\Perso\Jeux Video\C#\CommunicationProtocol\CommunicationProtocol\obj\Debug\netcoreapp2.1\CommunicationProtocol.pdb

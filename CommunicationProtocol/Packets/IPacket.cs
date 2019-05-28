@@ -1,6 +1,6 @@
 ﻿namespace CommunicationProtocol
 {
-    interface IPacket
+    public interface IPacket
     {
         bool Serialize(Serializer pSerializer);
     }
