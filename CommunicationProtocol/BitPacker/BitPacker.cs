@@ -56,9 +56,9 @@ namespace CommunicationProtocol
         public static BitPacker FromArray(byte[] pBuffer, bool pPushTempInBuffer = true)
         {
             BitPacker result = new BitPacker();
-            result._buffer = new uint[pBuffer.Length / 4];
             int nbOfBytePerBufferElement = BUFFER_BIT_SIZE / 8;
             int length = (int)Math.Ceiling((double)pBuffer.Length / nbOfBytePerBufferElement);
+            result._buffer = new uint[length];
             result.WordIndex = (int)Math.Floor((double)pBuffer.Length / nbOfBytePerBufferElement);
             result.BitIndex = pBuffer.Length * 8 % BUFFER_BIT_SIZE;
             for (int i = 0; i < length; i++)
@@ -78,7 +78,7 @@ namespace CommunicationProtocol
                     val |= (uint)b << j * 8;
                 }
                 if (shouldBeAdded)
-                    result._buffer[result.WordIndex + 1] = val;
+                    result._buffer[i] = val;
             }
             if (pPushTempInBuffer)
                 result.PushTempInBuffer();

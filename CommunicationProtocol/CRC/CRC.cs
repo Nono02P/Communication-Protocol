@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Security.Cryptography;
 
-namespace CRC
+namespace CommunicationProtocol.CRC
 {
     public class Crc : HashAlgorithm
     {
@@ -38,9 +38,9 @@ namespace CRC
         }
         #endregion
 
-        public UInt64[] GetTable()
+        public ulong[] GetTable()
         {
-            var res = new UInt64[_table.Length];
+            var res = new ulong[_table.Length];
             Array.Copy(_table, res, _table.Length);
             return res;
         }

@@ -1,4 +1,4 @@
-﻿namespace CRC
+﻿namespace CommunicationProtocol.CRC
 {
     public class Parameters
     {

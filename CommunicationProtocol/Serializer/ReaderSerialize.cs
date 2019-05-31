@@ -1,7 +1,8 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Text;
 
-namespace CommunicationProtocol
+namespace CommunicationProtocol.Serialiser
 {
     public class ReaderSerialize : Serializer
     {
@@ -71,9 +72,47 @@ namespace CommunicationProtocol
         }
         #endregion Fin de paquet
 
-        public override bool Serialize<T>(ref int pBitCounter, ref bool pResult, T pType)
+
+        public override bool Serialize<T>(ref int pBitCounter, ref bool pResult, List<T> pObjects, int pNbMaxObjects = 255)
         {
-            throw new NotImplementedException();
+            if (pResult)
+            {
+                int nbOfObjects = 0;
+                Serialize(ref pBitCounter, ref pResult, ref nbOfObjects, 0, pNbMaxObjects);
+
+                if (nbOfObjects > pNbMaxObjects)
+                    pResult = false;
+                if (pObjects.Count < nbOfObjects)
+                    pResult = false;    // TODO : Une fois l'instancieur créé, supprimer cette erreur de sérialisation.
+
+                const int difBitEncoding = 5; // Valeur = 0 à 31 (Nombre de bits pour encoder la différence d'index).
+                int difBitSize = (int)dBitPacking.ReadValue(difBitEncoding);
+
+                int index = 0;
+                for (int i = 0; i < nbOfObjects; i++)
+                {
+                    index += (int)dBitPacking.ReadValue(difBitSize);
+                    // TODO : Lire le type de l'objet
+                    // enumerationObjects = (int)dBitPacking.ReadValue();
+                    T obj = default(T);
+                    if (pObjects.Count > index)
+                    {
+                        // inListObjectType = getObjectType(enumerationObjets)
+                        obj = pObjects[index];
+                        // Comparer obj.GetType() et inListObjectType
+                        // Si identique, désérialiser, sinon pResult = false;
+                        obj.Serialize(this, ref pBitCounter, ref pResult);
+                    }
+                    else
+                    {
+                        // TODO : L'objet n'existe pas dans la liste, prévoir d'instancier l'objet de type enumerationObjects
+                        // obj = new object();
+                        // Ajouter l'objet à la liste
+                        // pObjects.Add(obj);
+                    }
+                }
+            }
+            return pResult;
         }
     }
 }

@@ -1,4 +1,6 @@
-﻿namespace CommunicationProtocol
+﻿using CommunicationProtocol.Serialiser;
+
+namespace CommunicationProtocol.Packets
 {
     public interface IPacket
     {

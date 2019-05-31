@@ -1,5 +1,8 @@
-﻿using CRC;
+﻿using CommunicationProtocol.CRC;
+using CommunicationProtocol.Packets;
+using CommunicationProtocol.Serialiser;
 using System;
+using System.Collections.Generic;
 using System.Numerics;
 
 namespace CommunicationProtocol
@@ -8,11 +11,39 @@ namespace CommunicationProtocol
     {
         static void Main(string[] args)
         {
-            TestSerializer();
+            TestSerializerPacketB();
             Console.Read();
         }
 
-        static void TestSerializer()
+        static void TestSerializerPacketB()
+        {
+            Serializer sender = new WriterSerialize();
+            List<IActor> senderList = new List<IActor>();
+            senderList.Add(new Tank() { Life = 100, Position = new Vector2(150), ShouldBeSend = true });
+            senderList.Add(new Loot() { NbOfAmmo = 1, AmmoType = Loot.eAmmoType.Grenada, Position = new Vector2(150), ShouldBeSend = true });
+            senderList.Add(new Tank() { Life = 80, Position = new Vector2(100), ShouldBeSend = false });
+            senderList.Add(new Tank() { Life = 50, Position = new Vector2(50), ShouldBeSend = true });
+            
+            PacketB sendedPacket = new PacketB() { Actors = senderList };
+            bool sendingAuthorized = sendedPacket.Serialize(sender);
+            sender.dBitPacking.PushTempInBuffer();
+
+            if (sendingAuthorized)
+            {
+                Serializer receiver = new ReaderSerialize();
+                receiver.dBitPacking = BitPacker.FromArray(sender.dBitPacking.GetByteBuffer());
+                List<IActor> receiverList = new List<IActor>();
+                receiverList.Add(new Tank());
+                receiverList.Add(new Loot());
+                receiverList.Add(new Tank());
+                receiverList.Add(new Tank());
+
+                PacketB receivedPacket = new PacketB() { Actors = receiverList };
+                bool isValid = receivedPacket.Serialize(receiver);
+            }
+        }
+
+        static void TestSerializerPacketA()
         {
             Serializer sender = new WriterSerialize();
             PacketA sendedPacket = new PacketA() { Position = new Vector3(-29.158f, 50.735f, 150.2875f), f = 100.191f, comment = "Je suis CON !!" };

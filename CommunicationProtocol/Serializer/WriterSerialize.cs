@@ -1,7 +1,8 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Text;
 
-namespace CommunicationProtocol
+namespace CommunicationProtocol.Serialiser
 {
     public class WriterSerialize : Serializer
     {
@@ -64,6 +65,55 @@ namespace CommunicationProtocol
             }
             return pResult;
         }
+
+
+        public override bool Serialize<T>(ref int pBitCounter, ref bool pResult, List<T> pObjects, int pNbMaxObjects = 255)
+        {
+            if (pResult)
+            {
+                int nbOfObjects = pObjects.Count;
+
+                int counterObjects = 0;
+                int maxDif = 0;
+                int previousIndex = 0;
+                for (int i = 0; i < nbOfObjects; i++)
+                {
+                    T obj = pObjects[i];
+                    if (obj.ShouldBeSend) // && !obj.LockSending)
+                    {
+                        int dif = i - previousIndex;
+                        if (dif > maxDif)
+                        {
+                            maxDif = dif;
+                        }
+                        previousIndex = i;
+                        counterObjects++;
+                    }
+                }
+
+                Serialize(ref pBitCounter, ref pResult, ref counterObjects, 0, pNbMaxObjects);
+
+                const int difBitEncoding = 5; // Valeur = 0 à 31 (Nombre de bits pour encoder la différence d'index).
+                dBitPacking.WriteValue((uint)maxDif, difBitEncoding);
+                pBitCounter += 5;
+
+                previousIndex = 0;
+                for (int i = 0; i < nbOfObjects; i++)
+                {
+                    T obj = pObjects[i];
+                    if (obj.ShouldBeSend) // && !obj.LockSending)
+                    {
+                        int dif = i - previousIndex;
+                        Serialize(ref pBitCounter, ref pResult, ref dif, 0, maxDif);
+                        // TODO : Ecrire l'ID de l'objet donné par l'instancieur
+                        obj.Serialize(this, ref pBitCounter, ref pResult);
+                        previousIndex = i;
+                    }
+                }
+            }
+            return pResult;
+        }
+
         #endregion Serialisation
 
         #region Fin de paquet
@@ -72,10 +122,5 @@ namespace CommunicationProtocol
             throw new NotImplementedException();
         }
         #endregion Fin de paquet
-
-        public override bool Serialize<T>(ref int pBitCounter, ref bool pResult, T pType)
-        {
-            throw new NotImplementedException();
-        }
     }
 }

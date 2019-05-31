@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace CRC
+namespace CommunicationProtocol.CRC
 {
     public static class CrcHelper
     {
@@ -56,7 +56,7 @@ namespace CRC
 
         #region ToBigEndian
 
-        internal static byte[] ToBigEndianBytes(UInt32 value)
+        internal static byte[] ToBigEndianBytes(uint value)
         {
             var result = BitConverter.GetBytes(value);
 
@@ -66,7 +66,7 @@ namespace CRC
             return result;
         }
 
-        internal static byte[] ToBigEndianBytes(UInt16 value)
+        internal static byte[] ToBigEndianBytes(ushort value)
         {
             var result = BitConverter.GetBytes(value);
 
@@ -76,7 +76,7 @@ namespace CRC
             return result;
         }
 
-        internal static byte[] ToBigEndianBytes(UInt64 value)
+        internal static byte[] ToBigEndianBytes(ulong value)
         {
             var result = BitConverter.GetBytes(value);
 
@@ -90,17 +90,17 @@ namespace CRC
 
         #region FromBigEndian
 
-        internal static UInt16 FromBigToUInt16(byte[] buffer, int start)
+        internal static ushort FromBigToUInt16(byte[] buffer, int start)
         {
             return (ushort)(buffer[start] << 8 | buffer[start + 1]);
         }
 
-        internal static UInt32 FromBigToUInt32(byte[] buffer, int start)
+        internal static uint FromBigToUInt32(byte[] buffer, int start)
         {
             return (uint)(buffer[start] << 24 | buffer[start + 1] << 16 | buffer[start + 2] << 8 | buffer[start + 3]);
         }
 
-        internal static UInt64 FromBigToUInt64(byte[] buffer, int start)
+        internal static ulong FromBigToUInt64(byte[] buffer, int start)
         {
             ulong result = 0;
             for (int i = 0; i < 8; i++)

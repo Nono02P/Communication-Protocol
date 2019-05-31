@@ -1,7 +1,8 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Numerics;
 
-namespace CommunicationProtocol
+namespace CommunicationProtocol.Serialiser
 {
     public abstract class Serializer
     {
@@ -15,7 +16,42 @@ namespace CommunicationProtocol
         public abstract void ManageData(byte[] pData);
         public abstract bool Serialize(ref int pBitCounter, ref bool pResult, ref int pValue, int pMin, int pMax);
         public abstract bool Serialize(ref int pBitCounter, ref bool pResult, ref string pValue, int pLengthMax);
-        public abstract bool Serialize<T>(ref int pBitCounter, ref bool pResult, T pType) where T : IPacket;
+        public abstract bool Serialize<T>(ref int pBitCounter, ref bool pResult, List<T> pObjects, int pNbMaxObjects = 255) where T : IBinarySerializable;
+
+        /*
+        public bool Serialize<T>(ref int pBitCounter, ref bool pResult, T pValue, Enum pEnum) where T : IConvertible
+        {
+            switch (pEnum.GetTypeCode())
+            {
+                case TypeCode.Int16:
+                case TypeCode.Int32:
+                case TypeCode.UInt16:
+                case TypeCode.UInt32:
+                    Array EnumValues = Enum.GetValues(pEnum.GetType());
+                    int min = int.MaxValue;
+                    int max = 0;
+                    for (int i = 0; i < EnumValues.Length; i++)
+                    {
+                        int value = (int)EnumValues.GetValue(i);
+                        if (value < min)
+                            min = value;
+                        if (value > max)
+                            max = value;
+                    }
+                    int valueOut = (int)pValue.ToInt32(null);
+                    Serialize(ref pBitCounter, ref pResult, ref valueOut, min, max);
+                    break;
+                case TypeCode.String:
+                    break;
+                default:
+                    break;
+            }
+            return pResult;
+        }
+        */
+
+        // TODO : Gérer une liste de types primitifs (int, float, string, etc).
+        //public abstract bool Serialize<T>(ref int pBitCounter, ref bool pResult, List<T> pType);
 
         public bool Serialize(ref int pBitCounter, ref bool pResult, ref Vector2 pValue, Vector2 pMin, Vector2 pMax, float pResolution = 1)
         {
