@@ -1,4 +1,4 @@
-﻿using CommunicationProtocol.Serialiser;
+﻿using CommunicationProtocol.Serialization;
 using System.Numerics;
 
 namespace CommunicationProtocol
@@ -10,24 +10,24 @@ namespace CommunicationProtocol
         public int Life { get; set; }
         
 
-        public bool Serialize(Serializer pSerializer, ref int pBitCounter, ref bool pResult)
+        public bool Serialize(Serializer pSerializer)
         {
             Vector2 position = Position;
             int life = Life;
-            if (pResult)
+            if (!pSerializer.Error)
             {
-                pSerializer.Serialize(ref pBitCounter, ref pResult, ref position, Vector2.Zero, new Vector2(4096));
-                pSerializer.Serialize(ref pBitCounter, ref pResult, ref life, 0, 100);
+                pSerializer.Serialize(ref position, Vector2.Zero, new Vector2(4096));
+                pSerializer.Serialize(ref life, 0, 100);
             }
 
-            if (pSerializer is ReaderSerialize && pResult)
+            if (pSerializer is ReaderSerialize && !pSerializer.Error)
             {
                 Position = position;
                 Life = life;
             }
 
-            ShouldBeSend = pResult;
-            return pResult;
+            ShouldBeSend = pSerializer.Error;
+            return pSerializer.Error;
         }
     }
 }

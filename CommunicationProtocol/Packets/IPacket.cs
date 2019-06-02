@@ -1,4 +1,4 @@
-﻿using CommunicationProtocol.Serialiser;
+﻿using CommunicationProtocol.Serialization;
 
 namespace CommunicationProtocol.Packets
 {

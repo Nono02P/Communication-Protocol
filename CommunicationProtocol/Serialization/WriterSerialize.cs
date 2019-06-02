@@ -2,11 +2,18 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace CommunicationProtocol.Serialiser
+namespace CommunicationProtocol.Serialization
 {
     public class WriterSerialize : Serializer
     {
+        public int BitCounter { get; private set; }
+
         public WriterSerialize(int pByteBufferSize = 1200) : base(pByteBufferSize) { }
+
+        public void ResetBitCounter()
+        {
+            BitCounter = 0;
+        }
 
         public override void ManageData(byte[] pData)
         {
@@ -15,61 +22,74 @@ namespace CommunicationProtocol.Serialiser
         }
 
         #region Serialisation
-        public override bool Serialize(ref int pBitCounter, ref bool pResult, ref float pValue, float pMin, float pMax, float pResolution = 1)
+        public override bool Serialize(ref bool pValue)
         {
-            base.Serialize(ref pBitCounter, ref pResult, ref pValue, pMin, pMax, pResolution);
-            if (pResult)
+            if (!Error)
+            {
+                uint val = 0;
+                if (pValue)
+                    val = 1;
+                dBitPacking.WriteValue(val, 1);
+                BitCounter++;
+            }
+            return Error;
+        }
+
+        public override bool Serialize(ref float pValue, float pMin, float pMax, float pResolution = 1)
+        {
+            base.Serialize(ref pValue, pMin, pMax, pResolution);
+            if (!Error)
             {
                 int min = (int)((decimal)pMin / (decimal)pResolution);
                 int max = (int)((decimal)pMax / (decimal)pResolution);
                 int value = (int)((decimal)pValue / (decimal)pResolution);
-                Serialize(ref pBitCounter, ref pResult, ref value, min, max);
+                Serialize(ref value, min, max);
             }
-            return pResult;
+            return Error;
         }
 
-        public override bool Serialize(ref int pBitCounter, ref bool pResult, ref int pValue, int pMin, int pMax)
+        public override bool Serialize(ref int pValue, int pMin, int pMax)
         {
             if (pValue < pMin || pValue > pMax)
-                pResult = false;
+                Error = true;
 
-            if (pResult)
+            if (!Error)
             {
                 int mappedValue = pValue - pMin;
                 int bitCounter = BitsRequired(pMin, pMax);
                 dBitPacking.WriteValue((uint)mappedValue, bitCounter);
-                pBitCounter += bitCounter;
+                BitCounter += bitCounter;
             }
-            return pResult;
+            return Error;
         }
 
-        public override bool Serialize(ref int pBitCounter, ref bool pResult, ref string pValue, int pLengthMax)
+        public override bool Serialize(ref string pValue, int pLengthMax)
         {
-            if (pResult)
+            if (!Error)
             {
                 byte[] data = Encoding.UTF8.GetBytes(pValue);
                 if (data.Length <= pLengthMax)
                 {
                     int bitCounter = BitsRequired(0, pLengthMax);
                     dBitPacking.WriteValue((uint)data.Length, bitCounter);
-                    pBitCounter += bitCounter;
+                    BitCounter += bitCounter;
                     for (int i = 0; i < data.Length; i++)
                     {
                         int charSize = 8;
                         dBitPacking.WriteValue(data[i], charSize);
-                        pBitCounter += charSize;
+                        BitCounter += charSize;
                     }
                 }
                 else
-                    pResult = false;
+                    Error = true;
             }
-            return pResult;
+            return Error;
         }
 
 
-        public override bool Serialize<T>(ref int pBitCounter, ref bool pResult, List<T> pObjects, int pNbMaxObjects = 255)
+        public override bool Serialize<T>(List<T> pObjects, int pNbMaxObjects = 255, bool pAddMissingElements = false)
         {
-            if (pResult)
+            if (!Error)
             {
                 int nbOfObjects = pObjects.Count;
 
@@ -91,11 +111,11 @@ namespace CommunicationProtocol.Serialiser
                     }
                 }
 
-                Serialize(ref pBitCounter, ref pResult, ref counterObjects, 0, pNbMaxObjects);
+                Serialize(ref counterObjects, 0, pNbMaxObjects);
 
                 const int difBitEncoding = 5; // Valeur = 0 à 31 (Nombre de bits pour encoder la différence d'index).
                 dBitPacking.WriteValue((uint)maxDif, difBitEncoding);
-                pBitCounter += 5;
+                BitCounter += 5;
 
                 previousIndex = 0;
                 for (int i = 0; i < nbOfObjects; i++)
@@ -104,20 +124,21 @@ namespace CommunicationProtocol.Serialiser
                     if (obj.ShouldBeSend) // && !obj.LockSending)
                     {
                         int dif = i - previousIndex;
-                        Serialize(ref pBitCounter, ref pResult, ref dif, 0, maxDif);
-                        // TODO : Ecrire l'ID de l'objet donné par l'instancieur
-                        obj.Serialize(this, ref pBitCounter, ref pResult);
+                        Serialize(ref dif, 0, maxDif);
+                        int objectID = SerializerFactory.GetID(obj);
+                        Serialize(ref objectID, 0, SerializerFactory.Count() - 1);
+                        obj.Serialize(this);
                         previousIndex = i;
                     }
                 }
             }
-            return pResult;
+            return Error;
         }
 
         #endregion Serialisation
 
         #region Fin de paquet
-        public override bool EndOfPacket(ref bool pResult, ref int pCheckValue, int pNbOfBits)
+        public override bool EndOfPacket(ref bool Error, ref int pCheckValue, int pNbOfBits)
         {
             throw new NotImplementedException();
         }

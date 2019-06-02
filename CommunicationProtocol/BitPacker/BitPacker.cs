@@ -177,7 +177,7 @@ namespace CommunicationProtocol
                         BitIndex -= pNbOfBits;
                         while (BitIndex <= 0)
                         {
-                            //WordIndex--;
+                            WordIndex--;
                             //_buffer.RemoveAt(_buffer.Count - 1);
                             BitIndex += BUFFER_BIT_SIZE;
                         }
@@ -239,7 +239,7 @@ namespace CommunicationProtocol
         public Span<uint> GetSpanBuffer()
         {
             int start = _offsetBitReaded / BUFFER_BIT_SIZE;
-            return new Span<uint>(_buffer, start, (int)Math.Ceiling((decimal)BitLength / BUFFER_BIT_SIZE) - start);
+            return new Span<uint>(_buffer, start, (int)Math.Ceiling((decimal)BitLength / BUFFER_BIT_SIZE)); // - start);
         }
 
         public override string ToString()

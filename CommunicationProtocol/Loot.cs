@@ -1,4 +1,4 @@
-﻿using CommunicationProtocol.Serialiser;
+﻿using CommunicationProtocol.Serialization;
 using System.Numerics;
 
 namespace CommunicationProtocol
@@ -12,31 +12,35 @@ namespace CommunicationProtocol
         }
 
         public bool ShouldBeSend { get; set; }
+        public bool IsActive { get; set; }
         public Vector2 Position { get; set; }
         public int NbOfAmmo { get; set; }
         public eAmmoType AmmoType { get; set; }
 
-        public bool Serialize(Serializer pSerializer, ref int pBitCounter, ref bool pResult)
+        public bool Serialize(Serializer pSerializer)
         {
+            bool isActive = IsActive;
             Vector2 position = Position;
             int nbOfAmmo = NbOfAmmo;
             int ammoType = (int)AmmoType;
-            if (pResult)
+            if (!pSerializer.Error)
             {
-                pSerializer.Serialize(ref pBitCounter, ref pResult, ref position, Vector2.Zero, new Vector2(4096));
-                pSerializer.Serialize(ref pBitCounter, ref pResult, ref nbOfAmmo, 0, 100);
-                pSerializer.Serialize(ref pBitCounter, ref pResult, ref ammoType, 0, 1);
+                pSerializer.Serialize(ref isActive);
+                pSerializer.Serialize(ref position, Vector2.Zero, new Vector2(4096));
+                pSerializer.Serialize(ref nbOfAmmo, 0, 100);
+                pSerializer.Serialize(ref ammoType, 0, 1);
             }
 
-            if (pSerializer is ReaderSerialize && pResult)
+            if (pSerializer is ReaderSerialize && !pSerializer.Error)
             {
+                IsActive = isActive;
                 Position = position;
                 NbOfAmmo = nbOfAmmo;
                 AmmoType = (eAmmoType)ammoType;
             }
 
-            ShouldBeSend = pResult;
-            return pResult;
+            ShouldBeSend = pSerializer.Error;
+            return pSerializer.Error;
         }
     }
 }

@@ -1,26 +1,26 @@
-﻿using CommunicationProtocol.Serialiser;
+﻿using CommunicationProtocol.Serialization;
 using System.Collections.Generic;
 
 namespace CommunicationProtocol.Packets
 {
     public struct PacketB : IPacket
     {
-        private int _alreadyWriteCounter;
-
         public List<IActor> Actors;
         const int SerializationCheck = -1431655766;
 
         public bool Serialize(Serializer pSerializer)
-        {
-            // TODO : Ajouter un compteur de bits pour retirer les bits écrits en cas d'erreur à la sérialisation.
-            bool result = true;
-            int bitCounter = 0;
+        {            
+            bool error = pSerializer.Serialize(Actors, 255, true);
 
-            pSerializer.Serialize(ref bitCounter, ref result, Actors, 255);
+            if (pSerializer is WriterSerialize && !error)
+            {
+                // TODO : vider le sérialiseur du nombre de bits à virer.
+                // bitCounter
+            }
 
             int checkValue = SerializationCheck;
-            //pSerializer.EndOfPacket(ref result, ref checkValue, 32);
-            return result;
+            // pSerializer.EndOfPacket(ref result, ref checkValue, 32);
+            return !error;
         }
     }
 }
