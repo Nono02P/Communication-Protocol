@@ -22,7 +22,8 @@ namespace CommunicationProtocol
             senderList.Add(new Tank() { Life = 100, Position = new Vector2(150), ShouldBeSend = true });
             senderList.Add(new Loot() { NbOfAmmo = 1, AmmoType = Loot.eAmmoType.Grenada, Position = new Vector2(150), IsActive = true, ShouldBeSend = true });
             senderList.Add(new Tank() { Life = 80, Position = new Vector2(100), ShouldBeSend = false });
-            senderList.Add(new Tank() { Life = 50, Position = new Vector2(50), ShouldBeSend = true });
+            senderList.Add(new Loot() { NbOfAmmo = 10, AmmoType = Loot.eAmmoType.Bullet, Position = new Vector2(360), IsActive = true, ShouldBeSend = true });
+            senderList.Add(new Tank() { Life = 50, Position = new Vector2(50), ShouldBeSend = false });
             
             PacketB sendedPacket = new PacketB() { Actors = senderList };
             bool sendingAuthorized = sendedPacket.Serialize(sender);

@@ -106,7 +106,7 @@ namespace CommunicationProtocol.Serialization
                     {
                         obj = SerializerFactory.CreateInstance<T>(objectID);
                         obj.Serialize(this);
-                        if (pAddMissingElements && !Error)
+                        if (pAddMissingElements && pObjects.Count == index && !Error)
                             pObjects.Add(obj);
                         else
                             Error = true;
