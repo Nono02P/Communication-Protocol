@@ -24,9 +24,8 @@ namespace CommunicationProtocol.Serialization
             else
             {
                 Type type = _types[pID];
-                Binder binder = null;
                 object result = new object();
-                return (T)type.InvokeMember(string.Empty, BindingFlags.CreateInstance, binder, result, new object[] { });
+                return (T)type.InvokeMember(string.Empty, BindingFlags.CreateInstance, null, result, new object[] { });
             }
         }
 
