@@ -6,12 +6,15 @@ namespace CommunicationProtocol.Serialization
 {
     public abstract class Serializer
     {
+        protected SerializerFactory dFactory;
+
         public BitPacker dBitPacking;
         public bool Error { get; protected set; }
-        
+
         public Serializer(int pByteBufferSize)
         {
             dBitPacking = new BitPacker(pByteBufferSize);
+            dFactory = new SerializerFactory();
         }
 
         public abstract void ManageData(byte[] pData);

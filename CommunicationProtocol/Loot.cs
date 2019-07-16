@@ -15,10 +15,8 @@ namespace CommunicationProtocol
         public bool IsActive { get; set; }
 
 
-
         private bool _sendPosition;
         private Vector2 _position;
-
         public Vector2 Position
         {
             get { return _position; }
@@ -35,7 +33,6 @@ namespace CommunicationProtocol
 
         private bool _sendNbOfAmmo;
         private int _nbOfAmmo;
-
         public int NbOfAmmo
         {
             get { return _nbOfAmmo; }

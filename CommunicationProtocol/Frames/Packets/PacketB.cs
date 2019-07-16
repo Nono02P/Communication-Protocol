@@ -1,7 +1,7 @@
 ﻿using CommunicationProtocol.Serialization;
 using System.Collections.Generic;
 
-namespace CommunicationProtocol.Packets
+namespace CommunicationProtocol.Frames.Packets
 {
     public struct PacketB : IPacket
     {

@@ -1,22 +1,24 @@
-﻿using System;
+﻿using CommunicationProtocol.Factories;
+using System;
 using System.Collections.Generic;
-using System.Reflection;
 
 namespace CommunicationProtocol.Serialization
 {
-    public static class SerializerFactory
+    public class SerializerFactory : Factory
     {
-        private static List<Type> _types;
-        
-        private static void InitialiseListID()
+        //private static List<Type> _types;
+
+        protected override void InitialiseListID()
         {
-            _types = new List<Type>();
-            _types.Add(typeof(Tank));
-            _types.Add(typeof(Loot));
+            dTypes = new List<Type>();
+            dTypes.Add(typeof(Tank));
+            dTypes.Add(typeof(Loot));
         }
 
-        public static T CreateInstance<T>(int pID) where T : IBinarySerializable
+        public new T CreateInstance<T>(int pID) where T : IBinarySerializable
         {
+            return base.CreateInstance<T>(pID);
+            /*
             if (_types == null)
                 InitialiseListID();
             if (pID >= _types.Count)
@@ -27,8 +29,10 @@ namespace CommunicationProtocol.Serialization
                 object result = new object();
                 return (T)type.InvokeMember(string.Empty, BindingFlags.CreateInstance, null, result, new object[] { });
             }
+            */
         }
 
+        /*
         public static Type GetType(int pID)
         {
             if (_types == null)
@@ -38,19 +42,24 @@ namespace CommunicationProtocol.Serialization
             else
                 return _types[pID];
         }
+        */
 
-        public static int GetID<T>(T pType) where T : IBinarySerializable
+        public new int GetID<T>(T pType) where T : IBinarySerializable
         {
+            return base.GetID(pType);
+            /*
             if (_types == null)
                 InitialiseListID();
             return _types.FindIndex(item => item == pType.GetType());
+            */
         }
-
+        /*
         public static int Count()
         {
             if (_types == null)
                 InitialiseListID();
             return _types.Count;
         }
+        */
     }
 }

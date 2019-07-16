@@ -92,19 +92,19 @@ namespace CommunicationProtocol.Serialization
                     index += (int)dBitPacking.ReadValue(difBitSize);
 
                     int objectID = 0;
-                    Serialize(ref objectID, 0, SerializerFactory.Count() - 1);
+                    Serialize(ref objectID, 0, dFactory.Count() - 1);
                     T obj = default(T);
                     if (pObjects.Count > index)
                     {
                         obj = pObjects[index];
-                        if (obj.GetType() == SerializerFactory.GetType(objectID))
+                        if (obj.GetType() == dFactory.GetType(objectID))
                             obj.Serialize(this);
                         else
                             Error = true;
                     }
                     else
                     {
-                        obj = SerializerFactory.CreateInstance<T>(objectID);
+                        obj = dFactory.CreateInstance<T>(objectID);
                         obj.Serialize(this);
                         if (pAddMissingElements && pObjects.Count == index && !Error)
                             pObjects.Add(obj);

@@ -125,8 +125,8 @@ namespace CommunicationProtocol.Serialization
                     {
                         int dif = i - previousIndex;
                         Serialize(ref dif, 0, maxDif);
-                        int objectID = SerializerFactory.GetID(obj);
-                        Serialize(ref objectID, 0, SerializerFactory.Count() - 1);
+                        int objectID = dFactory.GetID(obj);
+                        Serialize(ref objectID, 0, dFactory.Count() - 1);
                         obj.Serialize(this);
                         previousIndex = i;
                     }

@@ -12,7 +12,7 @@ namespace CommunicationProtocol
 
         #region Variables privées
         private uint[] _buffer;
-        private ulong _temp;
+        private ulong _temp;            // Tampon utilisé avant de pousser dans le buffer
         private int _offsetBitReaded;
         #endregion
 
@@ -100,6 +100,23 @@ namespace CommunicationProtocol
             }
         }
 
+        public void OverrideValue(uint pValue, int pNbOfBits, int pStartPosition = 0)
+        {
+            int bufferWordIndex = pStartPosition / BUFFER_BIT_SIZE;
+            int start = pStartPosition % BUFFER_BIT_SIZE;
+
+            uint maskNbOfBits = (uint)((1ul << pNbOfBits) - 1) << start;
+
+            _buffer[bufferWordIndex] = (_buffer[bufferWordIndex] & ~maskNbOfBits) | (maskNbOfBits & (pValue << start));
+            // Si la valeur à écrire se chevauche sur deux registres.
+            if (BUFFER_BIT_SIZE < start + pNbOfBits && bufferWordIndex + 1 <= WordIndex)
+            {
+                int s = start - BUFFER_BIT_SIZE + pNbOfBits;
+                uint maskNbOfBitsNextReg = (uint)((1ul << s) - 1);
+                _buffer[bufferWordIndex + 1] = (_buffer[bufferWordIndex + 1] & ~maskNbOfBitsNextReg) | (maskNbOfBitsNextReg & (pValue >> s));
+            }
+        }
+
         public void AlignToNextByte()
         {
             int remainingBits = BitIndex % 8;
@@ -148,10 +165,10 @@ namespace CommunicationProtocol
                     }
                     uint maskNbOfBits = (uint)((1ul << pNbOfBits) - 1);
                     ulong result = (spanBuffer[bufferWordIndex] & maskNbOfBits << start) >> start;
-                    // Si la valeur a lire se chevauche sur deux registres.
+                    // Si la valeur à lire se chevauche sur deux registres.
                     if (BUFFER_BIT_SIZE < start + pNbOfBits && bufferWordIndex + 1 < spanBuffer.Length)
                     {
-                        int s = start - 32 + pNbOfBits;
+                        int s = start - BUFFER_BIT_SIZE + pNbOfBits;
                         result |= (spanBuffer[bufferWordIndex + 1] & ((1ul << s) - 1)) << (pNbOfBits - s);
                     }
                     if (pRemoveBits)
@@ -163,7 +180,7 @@ namespace CommunicationProtocol
                             {
                                 uint temp = spanBuffer[i] & maskNbOfBits;
                                 spanBuffer[i] >>= pNbOfBits;
-                                spanBuffer[i] |= outVal << (32 - pNbOfBits);
+                                spanBuffer[i] |= outVal << (BUFFER_BIT_SIZE - pNbOfBits);
                                 outVal = temp;
                             }
                         }

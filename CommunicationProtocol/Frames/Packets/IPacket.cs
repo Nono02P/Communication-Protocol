@@ -1,6 +1,6 @@
 ﻿using CommunicationProtocol.Serialization;
 
-namespace CommunicationProtocol.Packets
+namespace CommunicationProtocol.Frames.Packets
 {
     public interface IPacket
     {
