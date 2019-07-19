@@ -11,16 +11,16 @@ namespace CommunicationProtocol
     {
         static void Main(string[] args)
         {
-            BitPacker bitPacker = new BitPacker();
+            /*BitPacker bitPacker = new BitPacker();
             bitPacker.WriteValue(80, 32);
             bitPacker.WriteValue(0x800800, 32);
-
-            //bitPacker.PushTempInBuffer();
 
             Console.WriteLine(bitPacker.ToString());
             bitPacker.OverrideValue(4160749567, 32, 16);
             Console.WriteLine(bitPacker.ToString());
-            //TestSerializerPacketB();
+            bitPacker.PushTempInBuffer();
+            Console.WriteLine(bitPacker.ToString());*/
+            TestSerializerPacketB();
             Console.Read(); 
         }
 
@@ -28,10 +28,12 @@ namespace CommunicationProtocol
         {
             Serializer sender = new WriterSerialize();
             List<IActor> senderList = new List<IActor>();
-            senderList.Add(new Tank() { Name = "Toto", Life = 100, Position = new Vector2(150), ShouldBeSend = true });
-            senderList.Add(new Loot() { NbOfAmmo = 1, AmmoType = Loot.eAmmoType.Grenada, Position = new Vector2(150), IsActive = true, ShouldBeSend = true });
+            Tank t = new Tank() { Name = "Toto", Life = 100, Position = new Vector2(150), ShouldBeSend = true };
+            t.Shoot();
+            senderList.Add(t);
+            senderList.Add(new Loot() { NbOfAmmo = 1, AmmoType = eAmmoType.Grenada, Position = new Vector2(150), IsActive = true, ShouldBeSend = true });
             senderList.Add(new Tank() { Name = "Tata", Life = 80, Position = new Vector2(100), ShouldBeSend = true });
-            senderList.Add(new Loot() { AmmoType = Loot.eAmmoType.Bullet, Position = new Vector2(360), IsActive = true, ShouldBeSend = true });
+            senderList.Add(new Loot() { AmmoType = eAmmoType.Bullet, Position = new Vector2(360), IsActive = true, ShouldBeSend = true });
             senderList.Add(new Tank() { Life = 50, Position = new Vector2(50), ShouldBeSend = true });
             
             PacketB sendedPacket = new PacketB() { Actors = senderList };

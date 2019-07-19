@@ -1,7 +1,4 @@
 ﻿using CommunicationProtocol.CRC;
-using CommunicationProtocol.Frames.Packets;
-using System;
-using System.Collections.Generic;
 
 namespace CommunicationProtocol.Frames
 {

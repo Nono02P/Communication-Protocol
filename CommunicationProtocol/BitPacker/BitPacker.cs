@@ -43,7 +43,6 @@ namespace CommunicationProtocol
 
         public BitPacker(uint[] pBuffer, int pBitLength)
         {
-            //_buffer = new List<uint>();
             _buffer = pBuffer;
             _temp = 0;
             _offsetBitReaded = 0;
@@ -87,10 +86,10 @@ namespace CommunicationProtocol
 
         public void WriteValue(uint pValue, int pNbOfBits)
         {
+            ValidateNbOfBits(pNbOfBits);
+
             if (_buffer == null)
                 _buffer = new uint[DEFAULT_BUFFER_SIZE];
-            if (pNbOfBits > 32)
-                throw new Exception("Impossible to write a 32 bit type on more than 32 bits.");
             ulong maskNbOfBits = (1ul << pNbOfBits) - 1;
             _temp |= (pValue & maskNbOfBits) << BitIndex;
             BitIndex += pNbOfBits;
@@ -102,6 +101,8 @@ namespace CommunicationProtocol
 
         public void OverrideValue(uint pValue, int pNbOfBits, int pStartPosition = 0)
         {
+            ValidateNbOfBits(pNbOfBits);
+
             int bufferWordIndex = pStartPosition / BUFFER_BIT_SIZE;
             int start = pStartPosition % BUFFER_BIT_SIZE;
 
@@ -112,8 +113,12 @@ namespace CommunicationProtocol
             if (BUFFER_BIT_SIZE < start + pNbOfBits && bufferWordIndex + 1 <= WordIndex)
             {
                 int s = start - BUFFER_BIT_SIZE + pNbOfBits;
-                uint maskNbOfBitsNextReg = (uint)((1ul << s) - 1);
+                uint maskNbOfBitsNextReg = (uint)(1ul << s) - 1;
                 _buffer[bufferWordIndex + 1] = (_buffer[bufferWordIndex + 1] & ~maskNbOfBitsNextReg) | (maskNbOfBitsNextReg & (pValue >> s));
+                if (bufferWordIndex + 1 == WordIndex)
+                {
+                    _temp = (_temp & ~maskNbOfBitsNextReg) | (maskNbOfBitsNextReg & (pValue >> s));
+                }
             }
         }
 
@@ -132,12 +137,7 @@ namespace CommunicationProtocol
                 {
                     //_buffer[WordIndex + 1] = (uint)_temp;
                     _buffer[WordIndex] = (uint)_temp;
-                    if (BitIndex < BUFFER_BIT_SIZE)
-                    {
-                        _temp >>= BitIndex;
-                        //BitIndex += 8 - BitIndex;
-                    }
-                    else
+                    if (BitIndex >= BUFFER_BIT_SIZE)
                     {
                         _temp >>= BUFFER_BIT_SIZE;
                         BitIndex -= BUFFER_BIT_SIZE;
@@ -148,9 +148,17 @@ namespace CommunicationProtocol
         }
         #endregion
 
+        private void ValidateNbOfBits(int pNbOfBits)
+        {
+            if (pNbOfBits < 1 || pNbOfBits > 32)
+                throw new Exception("Impossible to write a 32 bit type on more than 32 bits.");
+        }
+
         #region Vidage buffer
         public uint ReadValue(int pNbOfBits, bool pRemoveBits = true, int pStartPosition = 0)
         {
+            ValidateNbOfBits(pNbOfBits);
+
             int bufferWordIndex = pStartPosition / BUFFER_BIT_SIZE;
             int start = (pStartPosition + _offsetBitReaded) % BUFFER_BIT_SIZE;
             Span<uint> spanBuffer = GetSpanBuffer();
@@ -161,7 +169,7 @@ namespace CommunicationProtocol
                     uint startingVal = 0;
                     if (start > 0)
                     {
-                        startingVal = spanBuffer[bufferWordIndex] & (uint)((1ul << start) -1);
+                        startingVal = spanBuffer[bufferWordIndex] & (uint)((1ul << start) - 1);
                     }
                     uint maskNbOfBits = (uint)((1ul << pNbOfBits) - 1);
                     ulong result = (spanBuffer[bufferWordIndex] & maskNbOfBits << start) >> start;
