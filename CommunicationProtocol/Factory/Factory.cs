@@ -38,7 +38,10 @@ namespace CommunicationProtocol.Factories
         {
             if (dTypes == null)
                 InitialiseListID();
-            return dTypes.FindIndex(item => item == pType.GetType());
+            int id = dTypes.FindIndex(item => item == pType.GetType());
+            if (id == -1)
+                throw new Exception("The type : " + pType.GetType().ToString() + " does not exist in the factory.");
+            return id;
         }
 
         public int Count()
