@@ -87,7 +87,7 @@ namespace CommunicationProtocol.Serialization
         }
 
 
-        public override bool Serialize<T>(List<T> pObjects, int pNbMaxObjects = 255, bool pAddMissingElements = false)
+        public override bool Serialize<T>(List<T> pObjects, int pNbMaxObjects = 255, bool pAddMissingElements = false, Action<T> pOnObjectCreation = null)
         {
             if (!Error)
             {

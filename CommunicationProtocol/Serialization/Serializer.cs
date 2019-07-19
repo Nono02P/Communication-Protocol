@@ -21,7 +21,7 @@ namespace CommunicationProtocol.Serialization
         public abstract bool Serialize(ref bool pValue);
         public abstract bool Serialize(ref int pValue, int pMin, int pMax);
         public abstract bool Serialize(ref string pValue, int pLengthMax);
-        public abstract bool Serialize<T>(List<T> pObjects, int pNbMaxObjects = 255, bool pAddMissingElements = false) where T : IBinarySerializable;
+        public abstract bool Serialize<T>(List<T> pObjects, int pNbMaxObjects = 255, bool pAddMissingElements = false, Action<T> pOnObjectCreation = null) where T : IBinarySerializable;
 
         /*
         public bool Serialize<T>(T pValue, Enum pEnum) where T : IConvertible

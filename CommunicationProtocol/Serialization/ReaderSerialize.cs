@@ -73,7 +73,7 @@ namespace CommunicationProtocol.Serialization
             return Error;
         }
 
-        public override bool Serialize<T>(List<T> pObjects, int pNbMaxObjects = 255, bool pAddMissingElements = false)
+        public override bool Serialize<T>(List<T> pObjects, int pNbMaxObjects = 255, bool pAddMissingElements = false, Action<T> pOnObjectCreation = null)
         {
             if (!Error)
             {
@@ -105,6 +105,7 @@ namespace CommunicationProtocol.Serialization
                     else
                     {
                         obj = dFactory.CreateInstance<T>(objectID);
+                        pOnObjectCreation?.Invoke(obj);
                         obj.Serialize(this);
                         if (pAddMissingElements && pObjects.Count == index && !Error)
                             pObjects.Add(obj);

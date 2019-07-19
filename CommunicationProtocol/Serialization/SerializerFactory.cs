@@ -12,6 +12,7 @@ namespace CommunicationProtocol.Serialization
         {
             dTypes = new List<Type>();
             dTypes.Add(typeof(Tank));
+            dTypes.Add(typeof(Bullet));
             dTypes.Add(typeof(Loot));
         }
 
