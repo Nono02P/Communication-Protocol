@@ -4,6 +4,7 @@ using CommunicationProtocol.Frames.Packets;
 using CommunicationProtocol.Serialization;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Numerics;
 
 namespace CommunicationProtocol
@@ -15,29 +16,44 @@ namespace CommunicationProtocol
         static void Main(string[] args)
         {
             Rnd = new Random();
-            //TestCRC();
-            //TestBitPacker();
+            TestFrames();
             //TestSerializerPacketA();
             //TestSerializerPacketB();
-            TestFrames();
+            //TestBitPacker();
+            //TestCRC();
             Console.Read();
         }
 
+        #region Frames
         private static void TestFrames()
         {
-            FrameSender frame = new FrameSender();
-            frame.InsertPacket(RandomPacket());
-            frame.InsertPacket(RandomPacket());
-            byte[] data = frame.Send();
-            for (int i = data.Length - 1; i >= 0; i--)
+            FrameSender sender = new FrameSender();
+            while (true)
             {
-                Console.WriteLine(data[i] + " ");
+                List<Packet> sendPackets = new List<Packet>();
+                for (int i = 0; i < 3; i++)
+                {
+                    Packet p = RandomPacket();
+                    sender.InsertPacket(p);
+                    sendPackets.Add(p);
+                }
+
+                byte[] data = sender.Send();
+                string message = string.Empty;
+                for (int i = data.Length - 1; i >= 0; i--)
+                {
+                    message += data[i] + " ";
+                }
+                Console.WriteLine(message);
+
+                FrameReceiver receiver = new FrameReceiver();
+                List<Packet> packets = receiver.Receive(data);
+                Debug.Assert(packets.Count == 3);
             }
-
-            FrameReceiver receiver = new FrameReceiver();
-            receiver.Receive(data);
         }
+        #endregion Frames  
 
+        #region Packets
         private static Packet RandomPacket()
         {
             PacketFactory factory = PacketFactory.GetFactory();
@@ -45,19 +61,6 @@ namespace CommunicationProtocol
             Packet p = factory.CreateInstance<Packet>(id);
             p.Random();
             return p;
-        }
-
-        private static void TestBitPacker()
-        {
-            BitPacker bitPacker = new BitPacker();
-            bitPacker.WriteValue(80, 32);
-            bitPacker.WriteValue(0x800800, 32);
-
-            Console.WriteLine(bitPacker.ToString());
-            bitPacker.OverrideValue(4160749567, 32, 16);
-            Console.WriteLine(bitPacker.ToString());
-            bitPacker.PushTempInBuffer();
-            Console.WriteLine(bitPacker.ToString());
         }
 
         private static void TestSerializerPacketB()
@@ -96,18 +99,35 @@ namespace CommunicationProtocol
             sendedPacket = new PacketA() { Position = new Vector3(50, 100, 40), f = 45.02f, comment = "Je suis un test." };
             sendingAuthorized |= sendedPacket.Serialize(sender);
             sender.BitPacking.PushTempInBuffer();
-
+            byte[] data = sender.BitPacking.GetByteBuffer();
             if (sendingAuthorized)
             {
                 Serializer receiver = new ReaderSerialize();
-                receiver.BitPacking = sender.BitPacking;
+                receiver.BitPacking = BitPacker.FromArray(data);
                 PacketA receivedPacket = new PacketA();
                 PacketA receivedPacket2 = new PacketA();
                 bool isValid = receivedPacket.Serialize(receiver);
                 isValid = receivedPacket2.Serialize(receiver);
             }
         }
+        #endregion Packets  
 
+        #region BitPacker
+        private static void TestBitPacker()
+        {
+            BitPacker bitPacker = new BitPacker();
+            bitPacker.WriteValue(80, 32);
+            bitPacker.WriteValue(0x800800, 32);
+
+            Console.WriteLine(bitPacker.ToString());
+            bitPacker.OverrideValue(4160749567, 32, 16);
+            Console.WriteLine(bitPacker.ToString());
+            bitPacker.PushTempInBuffer();
+            Console.WriteLine(bitPacker.ToString());
+        }
+        #endregion BitPacker  
+
+        #region CRC
         private static void TestCRC()
         {
             // Sender side
@@ -157,5 +177,6 @@ namespace CommunicationProtocol
             else
                 Console.WriteLine("Paquet refusé !");
         }
+        #endregion CRC  
     }
 }

@@ -24,6 +24,9 @@ namespace CommunicationProtocol.Frames.Packets
 
         public override bool Serialize(Serializer pSerializer)
         {            
+            if (Actors == null)
+                Actors = new List<IActor>();
+
             pSerializer.Serialize(Actors, 255, true);
             
             return base.Serialize(pSerializer);

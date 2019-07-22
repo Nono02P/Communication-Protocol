@@ -13,7 +13,7 @@ namespace CommunicationProtocol.Frames.Packets
         public override void Random()
         {
             Position.Randomize(new Vector3(-30, 0, 0), new Vector3(100, 700, 190));
-            f = Program.Rnd.Next(1000);
+            f = Program.Rnd.Next(100);
         }
 
         public override bool Serialize(Serializer pSerializer)

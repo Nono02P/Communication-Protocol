@@ -30,7 +30,7 @@ namespace CommunicationProtocol.Frames
                 PrepareFrame();
 
             int id = dFactory.GetID(pPacket);
-            Serializer.Serialize(ref id, 0, dFactory.Count());              // ID de paquet
+            Serializer.Serialize(ref id, 0, dFactory.Count() - 1);              // ID de paquet
 
             pPacket.Serialize(Serializer);                                  // Data
 
@@ -46,15 +46,20 @@ namespace CommunicationProtocol.Frames
             Serializer.BitPacking.PushTempInBuffer();
 
             byte[] data = Serializer.BitPacking.GetByteBuffer();
-            Span<byte> dataSpan = data.AsSpan(6);
-            CrcCheck.ComputeHash(dataSpan.ToArray());
+            int crcByteLength = CrcCheck.HashSize / 8;
+
+            CrcCheck.ComputeHash(data, crcByteLength, data.Length - crcByteLength);
             dCrcValue = (int)CrcHelper.FromBigEndian(CrcCheck.Hash, CrcCheck.HashSize);
 
+            /*
             for (int i = 0; i < CrcCheck.HashSize / 8; i++)
             {
                 data[i] = CrcCheck.Hash[7 - i];
             }
-
+            */
+            Serializer.BitPacking.OverrideValue((uint)dCrcValue, CrcCheck.HashSize);            // Ecriture du CRC au début de la frame (zone réservée)
+            data = Serializer.BitPacking.GetByteBuffer();
+            //
             Sequence++;
             _shouldClean = true;
             return data;

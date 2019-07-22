@@ -136,7 +136,6 @@ namespace CommunicationProtocol
             {
                 if (_temp > 0 || !pCutEmptyEnd)
                 {
-                    //_buffer[WordIndex + 1] = (uint)_temp;
                     _buffer[WordIndex] = (uint)_temp;
                     if (BitIndex >= BUFFER_BIT_SIZE)
                     {
@@ -204,7 +203,6 @@ namespace CommunicationProtocol
                         while (BitIndex <= 0)
                         {
                             WordIndex--;
-                            //_buffer.RemoveAt(_buffer.Count - 1);
                             BitIndex += BUFFER_BIT_SIZE;
                         }
                     }
@@ -241,9 +239,11 @@ namespace CommunicationProtocol
             int lengthInByte = (int)Math.Ceiling((double)BitLength / 8);
             byte[] result = new byte[lengthInByte];
 
-            for (int i = 0; i < _buffer.Length; i++)
+            Span<uint> span = GetSpanBuffer();
+
+            for (int i = 0; i < span.Length; i++)
             {
-                uint currentInt = _buffer[i];
+                uint currentInt = span[i];
                 for (int j = 0; j < nbOfBytePerBufferElement; j++)
                 {
                     int byteIndex = i * nbOfBytePerBufferElement + j;

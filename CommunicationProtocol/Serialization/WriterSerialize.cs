@@ -6,16 +6,11 @@ namespace CommunicationProtocol.Serialization
 {
     public class WriterSerialize : Serializer
     {
-        public int BitCounter { get; private set; }
-
+        #region Constructor
         public WriterSerialize(int pByteBufferSize = 1200) : base(pByteBufferSize) { }
-
-        public void ResetBitCounter()
-        {
-            BitCounter = 0;
-        }
-
-        #region Serialisation
+        #endregion Constructor  
+        
+        #region Boolean
         public override bool Serialize(ref bool pValue)
         {
             if (!Error)
@@ -24,11 +19,12 @@ namespace CommunicationProtocol.Serialization
                 if (pValue)
                     val = 1;
                 BitPacking.WriteValue(val, 1);
-                BitCounter++;
             }
             return Error;
         }
+        #endregion Boolean  
 
+        #region Float
         public override bool Serialize(ref float pValue, float pMin, float pMax, float pResolution = 1)
         {
             base.Serialize(ref pValue, pMin, pMax, pResolution);
@@ -41,7 +37,9 @@ namespace CommunicationProtocol.Serialization
             }
             return Error;
         }
+        #endregion Float  
 
+        #region Integer
         public override bool Serialize(ref int pValue, int pMin, int pMax)
         {
             if (pValue < pMin || pValue > pMax)
@@ -52,35 +50,42 @@ namespace CommunicationProtocol.Serialization
                 int mappedValue = pValue - pMin;
                 int requiredBits = BitsRequired(pMin, pMax);
                 BitPacking.WriteValue((uint)mappedValue, requiredBits);
-                BitCounter += requiredBits;
             }
             return Error;
         }
+        #endregion Integer  
 
+        #region String
         public override bool Serialize(ref string pValue, int pLengthMax)
         {
             if (!Error)
             {
-                byte[] data = Encoding.UTF8.GetBytes(pValue);
-                if (data.Length <= pLengthMax)
+                int requiredBits = BitsRequired(0, pLengthMax);
+                if (string.IsNullOrEmpty(pValue))
                 {
-                    int requiredBits = BitsRequired(0, pLengthMax);
-                    BitPacking.WriteValue((uint)data.Length, requiredBits);
-                    BitCounter += requiredBits;
-                    for (int i = 0; i < data.Length; i++)
-                    {
-                        int charSize = 8;
-                        BitPacking.WriteValue(data[i], charSize);
-                        BitCounter += charSize;
-                    }
+                    BitPacking.WriteValue(0, requiredBits);                             // Longueur du string (cas d'une chaine nulle ou vide)
                 }
                 else
-                    Error = true;
+                {
+                    byte[] data = Encoding.UTF8.GetBytes(pValue);
+                    if (data.Length <= pLengthMax)
+                    {
+                        BitPacking.WriteValue((uint)data.Length, requiredBits);         // Longueur du string
+                        for (int i = 0; i < data.Length; i++)
+                        {
+                            int charSize = 8;
+                            BitPacking.WriteValue(data[i], charSize);                   // Caractères passés un par un
+                        }
+                    }
+                    else
+                        Error = true;
+                }
             }
             return Error;
         }
+        #endregion String  
 
-
+        #region List of Serializable Objects
         public override bool Serialize<T>(List<T> pObjects, int pNbMaxObjects = 255, bool pAddMissingElements = false, Action<T> pOnObjectCreation = null)
         {
             if (!Error)
@@ -93,7 +98,7 @@ namespace CommunicationProtocol.Serialization
                 for (int i = 0; i < nbOfObjects; i++)
                 {
                     T obj = pObjects[i];
-                    if (obj.ShouldBeSend) // && !obj.LockSending)
+                    if (obj.ShouldBeSend)
                     {
                         int dif = i - previousIndex;
                         if (dif > maxDif)
@@ -105,32 +110,35 @@ namespace CommunicationProtocol.Serialization
                     }
                 }
 
-                Serialize(ref counterObjects, 0, pNbMaxObjects);
+                Serialize(ref counterObjects, 0, pNbMaxObjects);                        // Nombre d'objets transmis
 
-                const int difBitEncoding = 5; // Valeur = 0 à 31 (Nombre de bits pour encoder la différence d'index).
-                BitPacking.WriteValue((uint)maxDif, difBitEncoding);
-                BitCounter += difBitEncoding;
-
-                previousIndex = 0;
-                if (maxDif > 0)
+                if (counterObjects > 0)
                 {
-                    for (int i = 0; i < nbOfObjects; i++)
+                    // 5 => Valeur = 0 à 31 (Nombre de bits pour encoder la différence d'index).
+                    const int difBitEncoding = 5;
+                    BitPacking.WriteValue((uint)maxDif, difBitEncoding);                // Nombre de bits sur quoi sera encodé la différence d'index
+
+                    previousIndex = 0;
+                    if (maxDif > 0)
                     {
-                        T obj = pObjects[i];
-                        if (obj.ShouldBeSend) // && !obj.LockSending)
+                        for (int i = 0; i < nbOfObjects; i++)
                         {
-                            int dif = i - previousIndex;
-                            Serialize(ref dif, 0, maxDif);
-                            int objectID = dFactory.GetID(obj);
-                            Serialize(ref objectID, 0, dFactory.Count() - 1);
-                            obj.Serialize(this);
-                            previousIndex = i;
+                            T obj = pObjects[i];
+                            if (obj.ShouldBeSend)
+                            {
+                                int dif = i - previousIndex;
+                                Serialize(ref dif, 0, maxDif);                          // Différence d'index avec l'objet précédent
+                                int objectID = dFactory.GetID(obj);
+                                Serialize(ref objectID, 0, dFactory.Count() - 1);       // ID de l'objet
+                                obj.Serialize(this);
+                                previousIndex = i;
+                            }
                         }
                     }
                 }
             }
             return Error;
         }
-        #endregion Serialisation
+        #endregion List of Serializable Objects  
     }
 }

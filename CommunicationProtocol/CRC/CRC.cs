@@ -149,9 +149,9 @@ namespace CommunicationProtocol.CRC
 
         public bool IsRight(byte[] bytes)
         {
-            //byte[] bytes = Encoding.ASCII.GetBytes("123456789");    // Code qui permet de récupérer le Check (et vérifier que le CRC n'a pas été préparé par quelqu'un.
+            // Code qui permet de récupérer le Check (et vérifier que le CRC n'a pas été préparé par quelqu'un.
 
-            var hashBytes = ComputeHash(bytes, 0, bytes.Length);
+            var hashBytes = ComputeHash(bytes);
 
             var hash = CrcHelper.FromBigEndian(hashBytes, HashSize);
 

@@ -1,62 +1,74 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Numerics;
 
 namespace CommunicationProtocol.Serialization
 {
     public abstract class Serializer
     {
+        #region Private Variables
+        private bool _error;
+        #endregion Private Variables  
+
+        #region Protected Variables
         protected SerializerFactory dFactory;
+        #endregion Protected Variables
 
+        #region Public Fields
         public BitPacker BitPacking;// { get; set; }
-        public bool Error { get; protected set; }
+        #endregion Public Fields
 
+        #region Properties
+        public bool Error { get { return _error; } protected set { _error = value; Debug.Assert(!value); } }
+        #endregion Properties  
+
+        #region Constructor
         public Serializer(int pByteBufferSize)
         {
             BitPacking = new BitPacker(pByteBufferSize);
             dFactory = SerializerFactory.GetFactory();
         }
+        #endregion Constructor  
 
+        #region Serialization Functions
         public abstract bool Serialize(ref bool pValue);
         public abstract bool Serialize(ref int pValue, int pMin, int pMax);
         public abstract bool Serialize(ref string pValue, int pLengthMax);
         public abstract bool Serialize<T>(List<T> pObjects, int pNbMaxObjects = 255, bool pAddMissingElements = false, Action<T> pOnObjectCreation = null) where T : IBinarySerializable;
-
-        /*
-        public bool Serialize<T>(T pValue, Enum pEnum) where T : IConvertible
+        
+        #region Float
+        public virtual bool Serialize(ref float pValue, float pMin, float pMax, float pResolution = 1)
         {
-            switch (pEnum.GetTypeCode())
+            if (!Error)
             {
-                case TypeCode.Int16:
-                case TypeCode.Int32:
-                case TypeCode.UInt16:
-                case TypeCode.UInt32:
-                    Array EnumValues = Enum.GetValues(pEnum.GetType());
-                    int min = int.MaxValue;
-                    int max = 0;
-                    for (int i = 0; i < EnumValues.Length; i++)
+                bool resolutionError = false;
+                if (pResolution > 1)
+                    resolutionError = true;
+                else
+                {
+                    decimal workResolution = (decimal)pResolution;
+                    while (workResolution < 1 && !resolutionError)
                     {
-                        int value = (int)EnumValues.GetValue(i);
-                        if (value < min)
-                            min = value;
-                        if (value > max)
-                            max = value;
+                        workResolution *= 10;
+                        if (workResolution > 1)
+                            resolutionError = true;
                     }
-                    int valueOut = (int)pValue.ToInt32(null);
-                    Serialize(ref valueOut, min, max);
-                    break;
-                case TypeCode.String:
-                    break;
-                default:
-                    break;
+                }
+                if (resolutionError)
+                {
+                    Error = true;
+                    throw new Exception("The resolution should be a number like 1, 0.1, 0.01, etc... The value is : " + pResolution);
+                }
             }
             return Error;
         }
-        */
+        #endregion Float  
 
         // TODO : Gérer une liste de types primitifs (int, float, string, etc).
         //public abstract bool Serialize<T>(List<T> pType);
 
+        #region Vectors / Quaternion
         public bool Serialize(ref Vector2 pValue, Vector2 pMin, Vector2 pMax, float pResolution = 1)
         {
             Serialize(ref pValue.X, pMin.X, pMax.X, pResolution);
@@ -89,33 +101,11 @@ namespace CommunicationProtocol.Serialization
             Serialize(ref pValue.W, pMin.W, pMax.W, pResolution);
             return Error;
         }
+        #endregion Vectors / Quaternion
 
-        public virtual bool Serialize(ref float pValue, float pMin, float pMax, float pResolution = 1)
-        {
-            if (!Error)
-            {
-                bool resolutionError = false;
-                if (pResolution > 1)
-                    resolutionError = true;
-                else
-                {
-                    decimal workResolution = (decimal)pResolution;
-                    while (workResolution < 1 && !resolutionError)
-                    {
-                        workResolution *= 10;
-                        if (workResolution > 1)
-                            resolutionError = true;
-                    }
-                }
-                if (resolutionError)
-                {
-                    Error = true;
-                    throw new Exception("The resolution should be a number like 1, 0.1, 0.01, etc... The value is : " + pResolution);
-                }
-            }
-            return Error;
-        }
-        
+        #endregion Serialization Functions  
+
+        #region Help Functions
         protected int BitsRequired(int pMin, int pMax)
         {
             if (pMin != pMax)
@@ -139,5 +129,6 @@ namespace CommunicationProtocol.Serialization
                 return 0;
             }
         }
+        #endregion Help Functions 
     }
 }
