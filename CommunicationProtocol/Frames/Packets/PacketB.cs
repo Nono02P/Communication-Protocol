@@ -1,26 +1,34 @@
 ﻿using CommunicationProtocol.Serialization;
+using System;
 using System.Collections.Generic;
 
 namespace CommunicationProtocol.Frames.Packets
 {
-    public struct PacketB : IPacket
+    public class PacketB : Packet
     {
         public List<IActor> Actors;
-        const int SerializationCheck = -1431655766;
 
-        public bool Serialize(Serializer pSerializer)
-        {            
-            bool error = pSerializer.Serialize(Actors, 255, true);
-
-            if (pSerializer is WriterSerialize && !error)
+        public override void Random()
+        {
+            Actors = new List<IActor>();
+            SerializerFactory factory = SerializerFactory.GetFactory();
+            Random rnd = Program.Rnd;
+            for (int i = 0; i < rnd.Next(100); i++)
             {
-                // TODO : vider le sérialiseur du nombre de bits à virer.
-                // bitCounter
+                int id = rnd.Next(factory.Count());
+                IBinarySerializable obj = factory.CreateInstance<IBinarySerializable>(id);
+                obj.Random();
+                Actors.Add((IActor)obj);
             }
-
-            int checkValue = SerializationCheck;
-            // pSerializer.EndOfPacket(ref result, ref checkValue, 32);
-            return !error;
         }
+
+        public override bool Serialize(Serializer pSerializer)
+        {            
+            pSerializer.Serialize(Actors, 255, true);
+            
+            return base.Serialize(pSerializer);
+        }
+
+        
     }
 }

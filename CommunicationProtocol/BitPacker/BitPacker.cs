@@ -20,6 +20,7 @@ namespace CommunicationProtocol
         public int BitIndex { get; private set; }
         public int WordIndex { get; private set; }
         public int BitLength { get { return BitIndex + WordIndex * BUFFER_BIT_SIZE; } }
+        public int ByteLength { get { return (int)Math.Ceiling(BitLength / (decimal)8); } }
         #endregion
 
         #region Constructeur

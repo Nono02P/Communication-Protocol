@@ -1,31 +1,28 @@
-﻿using CommunicationProtocol.Serialization;
+﻿using CommunicationProtocol.ExtensionMethods;
+using CommunicationProtocol.Serialization;
 using System.Numerics;
 
 namespace CommunicationProtocol.Frames.Packets
 {
-    public struct PacketA : IPacket
+    public class PacketA : Packet
     {
-        private int _alreadyWriteCounter;
-
         public Vector3 Position;
         public float f;
         public string comment;
-        const int SerializationCheck = -1431655766;
 
-        public bool Serialize(Serializer pSerializer)
+        public override void Random()
         {
-            // TODO : Ajouter un compteur de bits pour retirer les bits écrits en cas d'erreur à la sérialisation.
-            bool error = false;
-            if (!pSerializer.Serialize(ref Position, new Vector3(-30, 0, 0), new Vector3(100, 700, 190), 0.01f))
-                error = true;
-            if (pSerializer.Serialize(ref f, 0, 100.2f, 0.01f))
-                error = true;
-            if (pSerializer.Serialize(ref comment, 16))
-                error = true;
+            Position.Randomize(new Vector3(-30, 0, 0), new Vector3(100, 700, 190));
+            f = Program.Rnd.Next(1000);
+        }
 
-            int checkValue = SerializationCheck;
-            //pSerializer.EndOfPacket(ref result, ref checkValue, 32);
-            return !error;
+        public override bool Serialize(Serializer pSerializer)
+        {
+            pSerializer.Serialize(ref Position, new Vector3(-30, 0, 0), new Vector3(100, 700, 190), 0.01f);
+            pSerializer.Serialize(ref f, 0, 100.2f, 0.01f);
+            pSerializer.Serialize(ref comment, 16);
+
+            return base.Serialize(pSerializer);
         }
     }
 }

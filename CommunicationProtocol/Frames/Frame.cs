@@ -1,4 +1,6 @@
 ﻿using CommunicationProtocol.CRC;
+using CommunicationProtocol.Frames.Packets;
+using CommunicationProtocol.Serialization;
 
 namespace CommunicationProtocol.Frames
 {
@@ -15,15 +17,25 @@ namespace CommunicationProtocol.Frames
      *  [Packet Type = 0 (3 bits)]
      *  [Fragment ID (8 bits)]
      *  [Fragment index (8 bits)]
+     *  [Packet Type = 0 (3 bits)]
      *  [Packet Data (Variable length)]
      *  [Packet End Serialization Check (32 bits)]
      */
 
-    public class Frame
+    public abstract class Frame
     {
-        public int Sequence { get; private set; }
-        public Crc CrcCheck { get; private set; }
+        protected int dCrcValue;
+        protected PacketFactory dFactory;
 
+        public short Sequence { get; protected set; }
+        public Crc CrcCheck { get; protected set; }
+        public Serializer Serializer { get; protected set; }
 
+        public Frame()
+        {
+            Parameters parameters = CrcStdParams.StandartParameters[CrcAlgorithms.Crc32];
+            CrcCheck = new Crc(parameters);
+            dFactory = PacketFactory.GetFactory();
+        }
     }
 }
