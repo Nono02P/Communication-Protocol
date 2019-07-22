@@ -15,5 +15,10 @@
         /// <param name="Error">Résultat de sérialisation à transmettre par référence tel quel.</param>
         /// <returns></returns>
         bool Serialize(Serializer pSerializer);
+
+        /// <summary>
+        /// Méthode permettant de remplir l'objet avec des valeurs au hasard.
+        /// </summary>
+        void Random();
     }
 }

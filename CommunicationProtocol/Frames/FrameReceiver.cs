@@ -9,7 +9,6 @@ namespace CommunicationProtocol.Frames
         public FrameReceiver() : base()
         {
             Serializer = new ReaderSerialize();
-            Serializer.Serialize(ref dCrcValue, 0, CrcCheck.HashSize);
         }
 
         public List<Packet> Receive(byte[] pData)

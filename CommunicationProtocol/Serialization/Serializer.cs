@@ -8,16 +8,15 @@ namespace CommunicationProtocol.Serialization
     {
         protected SerializerFactory dFactory;
 
-        public BitPacker dBitPacking;
+        public BitPacker BitPacking;// { get; set; }
         public bool Error { get; protected set; }
 
         public Serializer(int pByteBufferSize)
         {
-            dBitPacking = new BitPacker(pByteBufferSize);
-            dFactory = new SerializerFactory();
+            BitPacking = new BitPacker(pByteBufferSize);
+            dFactory = SerializerFactory.GetFactory();
         }
 
-        public abstract void ManageData(byte[] pData);
         public abstract bool Serialize(ref bool pValue);
         public abstract bool Serialize(ref int pValue, int pMin, int pMax);
         public abstract bool Serialize(ref string pValue, int pLengthMax);
@@ -116,9 +115,7 @@ namespace CommunicationProtocol.Serialization
             }
             return Error;
         }
-
-        public abstract bool EndOfPacket(ref bool Error, ref int pCheckValue, int pNbOfBits);
-
+        
         protected int BitsRequired(int pMin, int pMax)
         {
             if (pMin != pMax)

@@ -7,19 +7,13 @@ namespace CommunicationProtocol.Serialization
     public class ReaderSerialize : Serializer
     {
         public ReaderSerialize(int pByteBufferSize = 1200) : base(pByteBufferSize) { }
-
-        public override void ManageData(byte[] pData)
-        {
-            dBitPacking.Clear();
-            dBitPacking = BitPacker.FromArray(pData);
-        }
-
+        
         #region Serialisation
         public override bool Serialize(ref bool pValue)
         {
             if (!Error)
             {
-                uint val = dBitPacking.ReadValue(1);
+                uint val = BitPacking.ReadValue(1);
                 pValue = val == 1;
             }
             return Error;
@@ -43,7 +37,7 @@ namespace CommunicationProtocol.Serialization
         {
             if (!Error)
             {
-                int value = (int)dBitPacking.ReadValue(BitsRequired(pMin, pMax)) + pMin;
+                int value = (int)BitPacking.ReadValue(BitsRequired(pMin, pMax)) + pMin;
                 if (value >= pMin && value <= pMax)
                     pValue = value;
                 else
@@ -56,14 +50,14 @@ namespace CommunicationProtocol.Serialization
         {
             if (!Error)
             {
-                int length = (int)dBitPacking.ReadValue(BitsRequired(0, pLengthMax));
+                int length = (int)BitPacking.ReadValue(BitsRequired(0, pLengthMax));
                 
                 if (length <= pLengthMax)
                 {
                     byte[] data = new byte[length];
                     for (int i = 0; i < data.Length; i++)
                     {
-                        data[i] = (byte)dBitPacking.ReadValue(8);
+                        data[i] = (byte)BitPacking.ReadValue(8);
                     }
                     pValue = Encoding.UTF8.GetString(data);
                 }
@@ -84,12 +78,12 @@ namespace CommunicationProtocol.Serialization
                     Error = true;
                 
                 const int difBitEncoding = 5; // Valeur = 0 à 31 (Nombre de bits pour encoder la différence d'index).
-                int difBitSize = (int)dBitPacking.ReadValue(difBitEncoding);
+                int difBitSize = (int)BitPacking.ReadValue(difBitEncoding);
 
                 int index = 0;
                 for (int i = 0; i < nbOfObjects; i++)
                 {
-                    index += (int)dBitPacking.ReadValue(difBitSize);
+                    index += (int)BitPacking.ReadValue(difBitSize);
 
                     int objectID = 0;
                     Serialize(ref objectID, 0, dFactory.Count() - 1);
@@ -117,12 +111,5 @@ namespace CommunicationProtocol.Serialization
             return Error;
         }
         #endregion Serialisation
-
-        #region Fin de paquet
-        public override bool EndOfPacket(ref bool Error, ref int pCheckValue, int pNbOfBits)
-        {
-            throw new NotImplementedException();
-        }
-        #endregion Fin de paquet
     }
 }

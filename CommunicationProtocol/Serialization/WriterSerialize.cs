@@ -15,12 +15,6 @@ namespace CommunicationProtocol.Serialization
             BitCounter = 0;
         }
 
-        public override void ManageData(byte[] pData)
-        {
-            dBitPacking.Clear();
-            dBitPacking = BitPacker.FromArray(pData);
-        }
-
         #region Serialisation
         public override bool Serialize(ref bool pValue)
         {
@@ -29,7 +23,7 @@ namespace CommunicationProtocol.Serialization
                 uint val = 0;
                 if (pValue)
                     val = 1;
-                dBitPacking.WriteValue(val, 1);
+                BitPacking.WriteValue(val, 1);
                 BitCounter++;
             }
             return Error;
@@ -56,9 +50,9 @@ namespace CommunicationProtocol.Serialization
             if (!Error)
             {
                 int mappedValue = pValue - pMin;
-                int bitCounter = BitsRequired(pMin, pMax);
-                dBitPacking.WriteValue((uint)mappedValue, bitCounter);
-                BitCounter += bitCounter;
+                int requiredBits = BitsRequired(pMin, pMax);
+                BitPacking.WriteValue((uint)mappedValue, requiredBits);
+                BitCounter += requiredBits;
             }
             return Error;
         }
@@ -70,13 +64,13 @@ namespace CommunicationProtocol.Serialization
                 byte[] data = Encoding.UTF8.GetBytes(pValue);
                 if (data.Length <= pLengthMax)
                 {
-                    int bitCounter = BitsRequired(0, pLengthMax);
-                    dBitPacking.WriteValue((uint)data.Length, bitCounter);
-                    BitCounter += bitCounter;
+                    int requiredBits = BitsRequired(0, pLengthMax);
+                    BitPacking.WriteValue((uint)data.Length, requiredBits);
+                    BitCounter += requiredBits;
                     for (int i = 0; i < data.Length; i++)
                     {
                         int charSize = 8;
-                        dBitPacking.WriteValue(data[i], charSize);
+                        BitPacking.WriteValue(data[i], charSize);
                         BitCounter += charSize;
                     }
                 }
@@ -114,34 +108,29 @@ namespace CommunicationProtocol.Serialization
                 Serialize(ref counterObjects, 0, pNbMaxObjects);
 
                 const int difBitEncoding = 5; // Valeur = 0 à 31 (Nombre de bits pour encoder la différence d'index).
-                dBitPacking.WriteValue((uint)maxDif, difBitEncoding);
-                BitCounter += 5;
+                BitPacking.WriteValue((uint)maxDif, difBitEncoding);
+                BitCounter += difBitEncoding;
 
                 previousIndex = 0;
-                for (int i = 0; i < nbOfObjects; i++)
+                if (maxDif > 0)
                 {
-                    T obj = pObjects[i];
-                    if (obj.ShouldBeSend) // && !obj.LockSending)
+                    for (int i = 0; i < nbOfObjects; i++)
                     {
-                        int dif = i - previousIndex;
-                        Serialize(ref dif, 0, maxDif);
-                        int objectID = dFactory.GetID(obj);
-                        Serialize(ref objectID, 0, dFactory.Count() - 1);
-                        obj.Serialize(this);
-                        previousIndex = i;
+                        T obj = pObjects[i];
+                        if (obj.ShouldBeSend) // && !obj.LockSending)
+                        {
+                            int dif = i - previousIndex;
+                            Serialize(ref dif, 0, maxDif);
+                            int objectID = dFactory.GetID(obj);
+                            Serialize(ref objectID, 0, dFactory.Count() - 1);
+                            obj.Serialize(this);
+                            previousIndex = i;
+                        }
                     }
                 }
             }
             return Error;
         }
-
         #endregion Serialisation
-
-        #region Fin de paquet
-        public override bool EndOfPacket(ref bool Error, ref int pCheckValue, int pNbOfBits)
-        {
-            throw new NotImplementedException();
-        }
-        #endregion Fin de paquet
     }
 }

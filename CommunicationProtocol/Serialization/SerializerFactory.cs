@@ -6,7 +6,14 @@ namespace CommunicationProtocol.Serialization
 {
     public class SerializerFactory : Factory
     {
-        //private static List<Type> _types;
+        private static SerializerFactory _instance;
+
+        public static SerializerFactory GetFactory()
+        {
+            if (_instance == null)
+                _instance = new SerializerFactory();
+            return _instance;
+        }
 
         protected override void InitialiseListID()
         {

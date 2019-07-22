@@ -1,4 +1,5 @@
 ﻿using CommunicationProtocol.CRC;
+using CommunicationProtocol.Frames;
 using CommunicationProtocol.Frames.Packets;
 using CommunicationProtocol.Serialization;
 using System;
@@ -9,9 +10,46 @@ namespace CommunicationProtocol
 {
     class Program
     {
+        public static Random Rnd;
+
         static void Main(string[] args)
         {
-            /*BitPacker bitPacker = new BitPacker();
+            Rnd = new Random();
+            //TestCRC();
+            //TestBitPacker();
+            //TestSerializerPacketA();
+            //TestSerializerPacketB();
+            TestFrames();
+            Console.Read();
+        }
+
+        private static void TestFrames()
+        {
+            FrameSender frame = new FrameSender();
+            frame.InsertPacket(RandomPacket());
+            frame.InsertPacket(RandomPacket());
+            byte[] data = frame.Send();
+            for (int i = data.Length - 1; i >= 0; i--)
+            {
+                Console.WriteLine(data[i] + " ");
+            }
+
+            FrameReceiver receiver = new FrameReceiver();
+            receiver.Receive(data);
+        }
+
+        private static Packet RandomPacket()
+        {
+            PacketFactory factory = PacketFactory.GetFactory();
+            int id = Rnd.Next(factory.Count());
+            Packet p = factory.CreateInstance<Packet>(id);
+            p.Random();
+            return p;
+        }
+
+        private static void TestBitPacker()
+        {
+            BitPacker bitPacker = new BitPacker();
             bitPacker.WriteValue(80, 32);
             bitPacker.WriteValue(0x800800, 32);
 
@@ -19,12 +57,10 @@ namespace CommunicationProtocol
             bitPacker.OverrideValue(4160749567, 32, 16);
             Console.WriteLine(bitPacker.ToString());
             bitPacker.PushTempInBuffer();
-            Console.WriteLine(bitPacker.ToString());*/
-            TestSerializerPacketB();
-            Console.Read(); 
+            Console.WriteLine(bitPacker.ToString());
         }
 
-        static void TestSerializerPacketB()
+        private static void TestSerializerPacketB()
         {
             Serializer sender = new WriterSerialize();
             List<IActor> senderList = new List<IActor>();
@@ -38,31 +74,33 @@ namespace CommunicationProtocol
             
             PacketB sendedPacket = new PacketB() { Actors = senderList };
             bool sendingAuthorized = sendedPacket.Serialize(sender);
-            sender.dBitPacking.PushTempInBuffer();
+            sender.BitPacking.PushTempInBuffer();
+
+            byte[] dataSending = sender.BitPacking.GetByteBuffer();
 
             if (sendingAuthorized)
             {
                 Serializer receiver = new ReaderSerialize();
-                receiver.dBitPacking = BitPacker.FromArray(sender.dBitPacking.GetByteBuffer());
+                receiver.BitPacking = BitPacker.FromArray(dataSending);
                 List<IActor> receiverList = new List<IActor>();
                 PacketB receivedPacket = new PacketB() { Actors = receiverList };
                 bool isValid = receivedPacket.Serialize(receiver);
             }
         }
 
-        static void TestSerializerPacketA()
+        private static void TestSerializerPacketA()
         {
             Serializer sender = new WriterSerialize();
             PacketA sendedPacket = new PacketA() { Position = new Vector3(-29.158f, 50.735f, 150.2875f), f = 100.191f, comment = "Je suis CON !!" };
             bool sendingAuthorized = sendedPacket.Serialize(sender);
             sendedPacket = new PacketA() { Position = new Vector3(50, 100, 40), f = 45.02f, comment = "Je suis un test." };
             sendingAuthorized |= sendedPacket.Serialize(sender);
-            sender.dBitPacking.PushTempInBuffer();
+            sender.BitPacking.PushTempInBuffer();
 
             if (sendingAuthorized)
             {
                 Serializer receiver = new ReaderSerialize();
-                receiver.dBitPacking = sender.dBitPacking;
+                receiver.BitPacking = sender.BitPacking;
                 PacketA receivedPacket = new PacketA();
                 PacketA receivedPacket2 = new PacketA();
                 bool isValid = receivedPacket.Serialize(receiver);
@@ -70,7 +108,7 @@ namespace CommunicationProtocol
             }
         }
 
-        static void TestCRC()
+        private static void TestCRC()
         {
             // Sender side
             // ============================================================================================

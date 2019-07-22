@@ -1,9 +1,10 @@
 ﻿using CommunicationProtocol.Serialization;
+using System;
 using System.Numerics;
 
 namespace CommunicationProtocol
 {
-    public class Bullet : IBinarySerializable
+    public class Bullet : IActor
     {
         public bool ShouldBeSend { get; set; }
         private Tank _parent;
@@ -99,6 +100,13 @@ namespace CommunicationProtocol
 
             ShouldBeSend = pSerializer.Error;
             return pSerializer.Error;
+        }
+
+        public void Random()
+        {
+            Position = _position.Randomize(new Vector2(4096));
+            Velocity = _velocity.Randomize(new Vector2(30));
+            Type = (eAmmoType)Math.Round(Program.Rnd.NextDouble());
         }
     }
 }

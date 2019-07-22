@@ -1,4 +1,5 @@
 ﻿using CommunicationProtocol.Serialization;
+using System;
 using System.Numerics;
 
 namespace CommunicationProtocol
@@ -71,6 +72,14 @@ namespace CommunicationProtocol
 
             ShouldBeSend = pSerializer.Error;
             return pSerializer.Error;
+        }
+
+        public void Random()
+        {
+            Random rnd = Program.Rnd;
+            Position = _position.Randomize(new Vector2(4097));
+            NbOfAmmo = rnd.Next(101);
+            AmmoType = (eAmmoType)Math.Round(rnd.NextDouble());
         }
     }
 }

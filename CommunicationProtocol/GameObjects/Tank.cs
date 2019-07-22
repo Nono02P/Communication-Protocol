@@ -71,7 +71,7 @@ namespace CommunicationProtocol
         public void Shoot()
         {
             Random rnd = new Random();
-            int nb = rnd.Next(255);
+            int nb = 100; //rnd.Next(100);
             for (int i = 0; i < nb; i++)
             {
                 Bullets.Add(new Bullet() { Position = new Vector2(rnd.Next(4096)), Velocity = new Vector2(rnd.Next(30)), Type = (eAmmoType)rnd.Next(2), ShouldBeSend = true } );
@@ -113,6 +113,13 @@ namespace CommunicationProtocol
 
             ShouldBeSend = pSerializer.Error;
             return pSerializer.Error;
+        }
+
+        public void Random()
+        {
+            Position = _position.Randomize(new Vector2(0, 4097));
+            Life = Program.Rnd.Next(101);
+            Shoot();
         }
     }
 }
