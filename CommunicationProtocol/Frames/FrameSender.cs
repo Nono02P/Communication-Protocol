@@ -16,12 +16,19 @@ namespace CommunicationProtocol.Frames
             PrepareFrame();
         }
 
+        private void Log(string pMessage, bool pEraseFile = false)
+        {
+            LogHelper.WriteToFile(pMessage, this, Program.FileName, pEraseFile);
+        }
+
         private void PrepareFrame()
         {
             _shouldClean = false;
             Serializer.BitPacking.Clear();
             Serializer.BitPacking.WriteValue(0, CrcCheck.HashSize);         // Ecriture d'un CRC vide
+            Log("CRC vide : " + 0 + " (" + CrcCheck.HashSize + "Bits)");
             Serializer.BitPacking.WriteValue((uint)Sequence, 16);           // Ecriture de l'index de séquence
+            Log("Sequence : " + Sequence + " (" + 16 +"Bits)");
         }
 
         public bool InsertPacket(Packet pPacket)
@@ -30,9 +37,10 @@ namespace CommunicationProtocol.Frames
                 PrepareFrame();
 
             int id = dFactory.GetID(pPacket);
-            Serializer.Serialize(ref id, 0, dFactory.Count() - 1);              // ID de paquet
-
-            pPacket.Serialize(Serializer);                                  // Data
+            Log("Packet ID : " + id + " (" + Serializer.BitsRequired(0, dFactory.Count() - 1) + "Bits)");
+            Serializer.Serialize(ref id, 0, dFactory.Count() - 1);                              // ID de paquet
+            Log("Data : ");
+            pPacket.Serialize(Serializer);                                                      // Data
 
             if (Serializer.BitPacking.ByteLength > MTU)
             {

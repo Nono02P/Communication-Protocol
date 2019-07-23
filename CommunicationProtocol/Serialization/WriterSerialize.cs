@@ -19,6 +19,7 @@ namespace CommunicationProtocol.Serialization
                 if (pValue)
                     val = 1;
                 BitPacking.WriteValue(val, 1);
+                LogHelper.WriteToFile("Write boolean : " + val, this, Program.FileName);
             }
             return Error;
         }
@@ -49,6 +50,7 @@ namespace CommunicationProtocol.Serialization
             {
                 int mappedValue = pValue - pMin;
                 int requiredBits = BitsRequired(pMin, pMax);
+                LogHelper.WriteToFile("Write integer : " + mappedValue + " (" + requiredBits + "Bits)", this, Program.FileName);
                 BitPacking.WriteValue((uint)mappedValue, requiredBits);
             }
             return Error;
@@ -64,6 +66,7 @@ namespace CommunicationProtocol.Serialization
                 if (string.IsNullOrEmpty(pValue))
                 {
                     BitPacking.WriteValue(0, requiredBits);                             // Longueur du string (cas d'une chaine nulle ou vide)
+                    LogHelper.WriteToFile("Write string length : " + 0 + " (" + requiredBits + "Bits)", this, Program.FileName);
                 }
                 else
                 {
@@ -71,6 +74,7 @@ namespace CommunicationProtocol.Serialization
                     if (data.Length <= pLengthMax)
                     {
                         BitPacking.WriteValue((uint)data.Length, requiredBits);         // Longueur du string
+                        LogHelper.WriteToFile("Write string length : " + data.Length + " '" + pValue + "'" + " (" + requiredBits + "Bits)", this, Program.FileName);
                         for (int i = 0; i < data.Length; i++)
                         {
                             int charSize = 8;
@@ -110,12 +114,14 @@ namespace CommunicationProtocol.Serialization
                     }
                 }
 
+                LogHelper.WriteToFile("Write List<Objects> Counter : ", this, Program.FileName);
                 Serialize(ref counterObjects, 0, pNbMaxObjects);                        // Nombre d'objets transmis
 
                 if (counterObjects > 0)
                 {
                     // 5 => Valeur = 0 à 31 (Nombre de bits pour encoder la différence d'index).
                     const int difBitEncoding = 5;
+                    LogHelper.WriteToFile("Write List<Objects> difference Bit Encoding : " + maxDif + " (" + difBitEncoding + "Bits)", this, Program.FileName);
                     BitPacking.WriteValue((uint)maxDif, difBitEncoding);                // Nombre de bits sur quoi sera encodé la différence d'index
 
                     previousIndex = 0;
@@ -127,9 +133,15 @@ namespace CommunicationProtocol.Serialization
                             if (obj.ShouldBeSend)
                             {
                                 int dif = i - previousIndex;
+                                LogHelper.WriteToFile("Write List<Objects> difference : ", this, Program.FileName);
                                 Serialize(ref dif, 0, maxDif);                          // Différence d'index avec l'objet précédent
                                 int objectID = dFactory.GetID(obj);
-                                Serialize(ref objectID, 0, dFactory.Count() - 1);       // ID de l'objet
+                                if (dFactory.Count() - 1 > 0)
+                                {
+                                    LogHelper.WriteToFile("Write List<Objects> Object ID : ", this, Program.FileName);
+                                    Serialize(ref objectID, 0, dFactory.Count() - 1);   // ID de l'objet (si plusieurs objets sont sérialisables
+                                }
+                                LogHelper.WriteToFile("Write List<Objects> Data : ", this, Program.FileName);
                                 obj.Serialize(this);
                                 previousIndex = i;
                             }

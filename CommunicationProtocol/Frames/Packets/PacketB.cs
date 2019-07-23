@@ -13,10 +13,11 @@ namespace CommunicationProtocol.Frames.Packets
             Actors = new List<IActor>();
             SerializerFactory factory = SerializerFactory.GetFactory();
             Random rnd = Program.Rnd;
-            for (int i = 0; i < rnd.Next(100); i++)
+            for (int i = 0; i < rnd.Next(20); i++)
             {
                 int id = rnd.Next(factory.Count());
                 IBinarySerializable obj = factory.CreateInstance<IBinarySerializable>(id);
+                obj.ShouldBeSend = true;
                 obj.Random();
                 Actors.Add((IActor)obj);
             }
@@ -31,7 +32,5 @@ namespace CommunicationProtocol.Frames.Packets
             
             return base.Serialize(pSerializer);
         }
-
-        
     }
 }

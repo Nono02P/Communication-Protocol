@@ -5,7 +5,7 @@
         /// <summary>
         /// Permet d'indiquer que l'objet doit être envoyé
         /// </summary>
-        bool ShouldBeSend { get; }
+        bool ShouldBeSend { get; set; }
 
         /// <summary>
         /// Méthode permettant de définir quelles sont les données que l'objet doit sérialiser/désérialiser

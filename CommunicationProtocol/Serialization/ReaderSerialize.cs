@@ -17,6 +17,7 @@ namespace CommunicationProtocol.Serialization
             {
                 uint val = BitPacking.ReadValue(1);
                 pValue = val == 1;
+                LogHelper.WriteToFile("Read boolean : " + val, this, Program.FileName);
             }
             return Error;
         }
@@ -43,7 +44,9 @@ namespace CommunicationProtocol.Serialization
         {
             if (!Error)
             {
-                int value = (int)BitPacking.ReadValue(BitsRequired(pMin, pMax)) + pMin;
+                int requiredBits = BitsRequired(pMin, pMax);
+                int value = (int)BitPacking.ReadValue(requiredBits) + pMin;
+                LogHelper.WriteToFile("Read integer : " + value + "(" + requiredBits + "Bits)", this, Program.FileName);
                 if (value >= pMin && value <= pMax)
                     pValue = value;
                 else
@@ -58,7 +61,9 @@ namespace CommunicationProtocol.Serialization
         {
             if (!Error)
             {
-                int length = (int)BitPacking.ReadValue(BitsRequired(0, pLengthMax));
+                int requiredBits = BitsRequired(0, pLengthMax);
+                int length = (int)BitPacking.ReadValue(requiredBits);
+                LogHelper.WriteToFile("Read string length : " + length + "(" + requiredBits + "Bits)", this, Program.FileName);
 
                 if (length <= pLengthMax)
                 {
@@ -70,6 +75,7 @@ namespace CommunicationProtocol.Serialization
                             data[i] = (byte)BitPacking.ReadValue(8);
                         }
                         pValue = Encoding.UTF8.GetString(data);
+                        LogHelper.WriteToFile("Read string data : " + pValue, this, Program.FileName);
                     }
                     else
                     {
@@ -90,28 +96,43 @@ namespace CommunicationProtocol.Serialization
             {
                 int nbOfObjects = 0;
                 Serialize(ref nbOfObjects, 0, pNbMaxObjects);
+                LogHelper.WriteToFile("Read List<Objects> Counter : " + nbOfObjects + "(" + BitsRequired(0, pNbMaxObjects) + "Bits)", this, Program.FileName);
 
                 if (nbOfObjects > pNbMaxObjects)
                     Error = true;
 
                 if (nbOfObjects > 0)
                 {
-                    const int difBitEncoding = 5; // Valeur = 0 à 31 (Nombre de bits pour encoder la différence d'index).
-                    int difBitSize = (int)BitPacking.ReadValue(difBitEncoding);
+                    // 5 => Valeur = 0 à 31 (Nombre de bits pour encoder la différence d'index).
+                    const int difBitEncoding = 5; 
+                    int difBitSize = (int)BitPacking.ReadValue(difBitEncoding);         // Nombre de bits sur quoi sera encodé la différence d'index
+                    LogHelper.WriteToFile("Read List<Objects> difference Bit Encoding : " + difBitSize + " (" + difBitEncoding + "Bits)", this, Program.FileName);
 
                     int index = 0;
                     for (int i = 0; i < nbOfObjects; i++)
                     {
-                        index += (int)BitPacking.ReadValue(difBitSize);
+                        if (difBitSize > 0)
+                        {
+                            int dif = (int)BitPacking.ReadValue(difBitSize);
+                            index += dif;                                               // Différence d'index avec l'objet précédent
+                            LogHelper.WriteToFile("Read List<Objects> difference : " + dif + " index : " + index + "(" + difBitSize + "Bits)", this, Program.FileName);
+                        }
 
                         int objectID = 0;
-                        Serialize(ref objectID, 0, dFactory.Count() - 1);
+                        if (dFactory.Count() - 1 > 0)
+                        {
+                            Serialize(ref objectID, 0, dFactory.Count() - 1);           // ID de l'objet (si plusieurs objets sont sérialisables
+                            LogHelper.WriteToFile("Read List<Objects> Object ID : " + objectID + "(" + BitsRequired(0, dFactory.Count() - 1) + "Bits)", this, Program.FileName);
+                        }
                         T obj = default(T);
                         if (pObjects.Count > index)
                         {
                             obj = pObjects[index];
                             if (obj.GetType() == dFactory.GetType(objectID))
+                            {
+                                LogHelper.WriteToFile("Read List<Objects> Data on object already in list : ", this, Program.FileName);
                                 obj.Serialize(this);
+                            }
                             else
                                 Error = true;
                         }
@@ -119,6 +140,7 @@ namespace CommunicationProtocol.Serialization
                         {
                             obj = dFactory.CreateInstance<T>(objectID);
                             pOnObjectCreation?.Invoke(obj);
+                            LogHelper.WriteToFile("Read List<Objects> Data on Created object : ", this, Program.FileName);
                             obj.Serialize(this);
                             if (pAddMissingElements && pObjects.Count == index && !Error)
                                 pObjects.Add(obj);

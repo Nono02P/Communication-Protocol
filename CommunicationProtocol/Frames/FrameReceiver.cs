@@ -9,12 +9,17 @@ namespace CommunicationProtocol.Frames
     {
         public FrameReceiver() : base()
         {
+            Log("Init Receiver");
             Serializer = new ReaderSerialize();
+        }
+
+        private void Log(string pMessage, bool pEraseFile = false)
+        {
+            LogHelper.WriteToFile(pMessage, this, Program.FileName, pEraseFile);
         }
 
         public List<Packet> Receive(byte[] pData)
         {
-            
             Serializer.BitPacking = BitPacker.FromArray(pData);
             uint crcValue = Serializer.BitPacking.ReadValue(CrcCheck.HashSize);             // CRC
             dCrcParameters.Check = crcValue;

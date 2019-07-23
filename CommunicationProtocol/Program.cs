@@ -11,6 +11,7 @@ namespace CommunicationProtocol
 {
     class Program
     {
+        public static string FileName;
         public static Random Rnd;
 
         static void Main(string[] args)
@@ -27,13 +28,16 @@ namespace CommunicationProtocol
         #region Frames
         private static void TestFrames()
         {
+            FileName = "Sender";
             FrameSender sender = new FrameSender();
             while (true)
             {
+                FileName = "Sender";
+                LogHelper.WriteToFile("Prepare to sending packet.", "Program", FileName, true);
                 List<Packet> sendPackets = new List<Packet>();
-                for (int i = 0; i < 3; i++)
+                for (int i = 0; i < 1; i++)
                 {
-                    Packet p = RandomPacket();
+                    Packet p = GetPacketB(); //RandomPacket();
                     sender.InsertPacket(p);
                     sendPackets.Add(p);
                 }
@@ -46,9 +50,11 @@ namespace CommunicationProtocol
                 }
                 Console.WriteLine(message);
 
+                FileName = "Receiver";
                 FrameReceiver receiver = new FrameReceiver();
+                LogHelper.WriteToFile("Prepare to receive packet.", "Program", FileName, true);
                 List<Packet> packets = receiver.Receive(data);
-                Debug.Assert(packets.Count == 3);
+                Debug.Assert(packets.Count == sendPackets.Count);
             }
         }
         #endregion Frames  
@@ -60,6 +66,26 @@ namespace CommunicationProtocol
             int id = Rnd.Next(factory.Count());
             Packet p = factory.CreateInstance<Packet>(id);
             p.Random();
+            return p;
+        }
+
+        private static Packet GetPacketA()
+        {
+            PacketA p = new PacketA();
+            p.Position = new Vector3(50.55f, 80.1f, 18.6666f);
+            p.f = 78.654426f;
+            p.comment = "Test packet A";
+            return p;
+        }
+
+        private static Packet GetPacketB()
+        {
+            PacketB p = new PacketB();
+            p.Actors = new List<IActor>();
+            Tank t = new Tank() { Name = "Toto", Life = 100, Position = new Vector2(150), ShouldBeSend = true };
+            t.Shoot();
+            p.Actors.Add(t);
+            p.Actors.Add(new Loot() { NbOfAmmo = 1, AmmoType = eAmmoType.Grenada, Position = new Vector2(150), IsActive = true, ShouldBeSend = true });
             return p;
         }
 

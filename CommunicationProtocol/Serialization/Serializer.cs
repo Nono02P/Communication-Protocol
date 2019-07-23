@@ -106,7 +106,7 @@ namespace CommunicationProtocol.Serialization
         #endregion Serialization Functions  
 
         #region Help Functions
-        protected int BitsRequired(int pMin, int pMax)
+        public int BitsRequired(int pMin, int pMax)
         {
             if (pMin != pMax)
             {
