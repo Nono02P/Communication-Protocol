@@ -65,8 +65,12 @@ namespace CommunicationProtocol
             if (pSerializer is ReaderSerialize && !pSerializer.Error)
             {
                 IsActive = isActive;
-                Position = position;
-                NbOfAmmo = nbOfAmmo;
+                if (_sendPosition)
+                    Position = position;
+
+                if (_sendNbOfAmmo)
+                    NbOfAmmo = nbOfAmmo;
+
                 AmmoType = (eAmmoType)ammoType;
             }
 

@@ -162,7 +162,7 @@ namespace CommunicationProtocol
             int bufferWordIndex = pStartPosition / BUFFER_BIT_SIZE;
             int start = (pStartPosition + _offsetBitReaded) % BUFFER_BIT_SIZE;
             Span<uint> spanBuffer = GetSpanBuffer();
-            if ((bufferWordIndex + pNbOfBits / BUFFER_BIT_SIZE) < spanBuffer.Length)
+            if ((bufferWordIndex + pNbOfBits / BUFFER_BIT_SIZE) <= spanBuffer.Length)
             {
                 if (pNbOfBits <= BUFFER_BIT_SIZE)
                 {

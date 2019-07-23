@@ -75,26 +75,26 @@ namespace CommunicationProtocol
 
             if (!pSerializer.Error)
             {
-                pSerializer.Serialize(ref _sendPosition);
-                if (_sendPosition)
-                    pSerializer.Serialize(ref position, Vector2.Zero, new Vector2(4096));
+                //pSerializer.Serialize(ref _sendPosition);
+                //if (_sendPosition)
+                pSerializer.Serialize(ref position, Vector2.Zero, new Vector2(4096));
 
-                pSerializer.Serialize(ref _sendVelocity);
-                if (_sendVelocity)
+                //pSerializer.Serialize(ref _sendVelocity);
+                //if (_sendVelocity)
                     pSerializer.Serialize(ref velocity, Vector2.Zero, new Vector2(30));
 
-                pSerializer.Serialize(ref _sendType);
-                if (_sendType)
+                //pSerializer.Serialize(ref _sendType);
+                //if (_sendType)
                     pSerializer.Serialize(ref type, 0, 1);
             }
 
             if (pSerializer is ReaderSerialize && !pSerializer.Error)
             {
-                if (_sendPosition)
+                //if (_sendPosition)
                     Position = position;
-                if (_sendVelocity)
+                //if (_sendVelocity)
                     Velocity = velocity;
-                if (_sendType)
+                //if (_sendType)
                     Type = (eAmmoType)type;
             }
 

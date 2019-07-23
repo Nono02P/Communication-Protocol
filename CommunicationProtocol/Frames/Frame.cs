@@ -24,6 +24,8 @@ namespace CommunicationProtocol.Frames
 
     public abstract class Frame
     {
+        protected const int SEQUENCE_SIZE = 16;
+
         protected int dCrcValue;
         protected PacketFactory dFactory;
         protected Parameters dCrcParameters;

@@ -1,11 +1,13 @@
-﻿using CommunicationProtocol.CRC;
+﻿//#define TRACE_LOG
+
+using CommunicationProtocol.CRC;
 using CommunicationProtocol.Frames;
 using CommunicationProtocol.Frames.Packets;
 using CommunicationProtocol.Serialization;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Numerics;
+
 
 namespace CommunicationProtocol
 {
@@ -30,14 +32,18 @@ namespace CommunicationProtocol
         {
             FileName = "Sender";
             FrameSender sender = new FrameSender();
+            ulong counter = 0;
             while (true)
             {
                 FileName = "Sender";
+#if TRACE_LOG
                 LogHelper.WriteToFile("Prepare to sending packet.", "Program", FileName, true);
+#endif
                 List<Packet> sendPackets = new List<Packet>();
                 for (int i = 0; i < 1; i++)
                 {
-                    Packet p = GetPacketB(); //RandomPacket();
+                    Packet p = GetPacketB(); 
+                    //Packet p = RandomPacket();
                     sender.InsertPacket(p);
                     sendPackets.Add(p);
                 }
@@ -52,9 +58,11 @@ namespace CommunicationProtocol
 
                 FileName = "Receiver";
                 FrameReceiver receiver = new FrameReceiver();
+#if TRACE_LOG
                 LogHelper.WriteToFile("Prepare to receive packet.", "Program", FileName, true);
+#endif
                 List<Packet> packets = receiver.Receive(data);
-                Debug.Assert(packets.Count == sendPackets.Count);
+                counter++;
             }
         }
         #endregion Frames  
@@ -85,7 +93,10 @@ namespace CommunicationProtocol
             Tank t = new Tank() { Name = "Toto", Life = 100, Position = new Vector2(150), ShouldBeSend = true };
             t.Shoot();
             p.Actors.Add(t);
-            p.Actors.Add(new Loot() { NbOfAmmo = 1, AmmoType = eAmmoType.Grenada, Position = new Vector2(150), IsActive = true, ShouldBeSend = true });
+            for (int i = 0; i < 50; i++)
+            {
+                p.Actors.Add(new Loot() { NbOfAmmo = 0, AmmoType = eAmmoType.Grenada, Position = new Vector2(150), IsActive = true, ShouldBeSend = true });
+            }
             return p;
         }
 

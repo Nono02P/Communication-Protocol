@@ -9,27 +9,30 @@ namespace CommunicationProtocol.Frames
     {
         public FrameReceiver() : base()
         {
+#if TRACE_LOG
             Log("Init Receiver");
+#endif
             Serializer = new ReaderSerialize();
         }
 
+#if TRACE_LOG
         private void Log(string pMessage, bool pEraseFile = false)
         {
             LogHelper.WriteToFile(pMessage, this, Program.FileName, pEraseFile);
         }
+#endif
 
         public List<Packet> Receive(byte[] pData)
         {
             Serializer.BitPacking = BitPacker.FromArray(pData);
             uint crcValue = Serializer.BitPacking.ReadValue(CrcCheck.HashSize);             // CRC
+
             dCrcParameters.Check = crcValue;
 
             byte[] dataCrcCalculation = Serializer.BitPacking.GetByteBuffer();
             if (CrcCheck.IsRight(dataCrcCalculation))
             {
-                int sequenceIndex = 0;
-                Serializer.Serialize(ref sequenceIndex, ushort.MinValue, ushort.MaxValue);  // Sequence
-                Sequence = (ushort)sequenceIndex;
+                Sequence = (ushort)Serializer.BitPacking.ReadValue(SEQUENCE_SIZE);          // Sequence
                 List<Packet> result = new List<Packet>();
                 int id = 0;
 
@@ -40,8 +43,7 @@ namespace CommunicationProtocol.Frames
                     Serializer.Serialize(ref id, 0, dFactory.Count() - 1);                  // ID de paquet
 
                     Packet packet = dFactory.CreateInstance<Packet>(id);
-                    packet.Serialize(Serializer);                                           // Data
-                    if (!Serializer.Error)
+                    if (packet.Serialize(Serializer))                                       // Data
                         result.Add(packet);
                 }
                 return result;

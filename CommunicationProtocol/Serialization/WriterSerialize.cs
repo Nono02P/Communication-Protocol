@@ -19,7 +19,9 @@ namespace CommunicationProtocol.Serialization
                 if (pValue)
                     val = 1;
                 BitPacking.WriteValue(val, 1);
+#if TRACE_LOG
                 LogHelper.WriteToFile("Write boolean : " + val, this, Program.FileName);
+#endif
             }
             return Error;
         }
@@ -48,15 +50,17 @@ namespace CommunicationProtocol.Serialization
 
             if (!Error)
             {
-                int mappedValue = pValue - pMin;
+                long mappedValue = pValue - pMin;
                 int requiredBits = BitsRequired(pMin, pMax);
+#if TRACE_LOG
                 LogHelper.WriteToFile("Write integer : " + mappedValue + " (" + requiredBits + "Bits)", this, Program.FileName);
+#endif
                 BitPacking.WriteValue((uint)mappedValue, requiredBits);
             }
             return Error;
         }
-        #endregion Integer  
-
+        #endregion Integer 
+        
         #region String
         public override bool Serialize(ref string pValue, int pLengthMax)
         {
@@ -66,7 +70,9 @@ namespace CommunicationProtocol.Serialization
                 if (string.IsNullOrEmpty(pValue))
                 {
                     BitPacking.WriteValue(0, requiredBits);                             // Longueur du string (cas d'une chaine nulle ou vide)
+#if TRACE_LOG
                     LogHelper.WriteToFile("Write string length : " + 0 + " (" + requiredBits + "Bits)", this, Program.FileName);
+#endif
                 }
                 else
                 {
@@ -74,7 +80,9 @@ namespace CommunicationProtocol.Serialization
                     if (data.Length <= pLengthMax)
                     {
                         BitPacking.WriteValue((uint)data.Length, requiredBits);         // Longueur du string
+#if TRACE_LOG
                         LogHelper.WriteToFile("Write string length : " + data.Length + " '" + pValue + "'" + " (" + requiredBits + "Bits)", this, Program.FileName);
+#endif
                         for (int i = 0; i < data.Length; i++)
                         {
                             int charSize = 8;
@@ -113,15 +121,18 @@ namespace CommunicationProtocol.Serialization
                         counterObjects++;
                     }
                 }
-
+#if TRACE_LOG
                 LogHelper.WriteToFile("Write List<Objects> Counter : ", this, Program.FileName);
+#endif
                 Serialize(ref counterObjects, 0, pNbMaxObjects);                        // Nombre d'objets transmis
 
                 if (counterObjects > 0)
                 {
                     // 5 => Valeur = 0 à 31 (Nombre de bits pour encoder la différence d'index).
                     const int difBitEncoding = 5;
+#if TRACE_LOG
                     LogHelper.WriteToFile("Write List<Objects> difference Bit Encoding : " + maxDif + " (" + difBitEncoding + "Bits)", this, Program.FileName);
+#endif
                     BitPacking.WriteValue((uint)maxDif, difBitEncoding);                // Nombre de bits sur quoi sera encodé la différence d'index
 
                     previousIndex = 0;
@@ -133,15 +144,21 @@ namespace CommunicationProtocol.Serialization
                             if (obj.ShouldBeSend)
                             {
                                 int dif = i - previousIndex;
+#if TRACE_LOG
                                 LogHelper.WriteToFile("Write List<Objects> difference : ", this, Program.FileName);
+#endif
                                 Serialize(ref dif, 0, maxDif);                          // Différence d'index avec l'objet précédent
                                 int objectID = dFactory.GetID(obj);
                                 if (dFactory.Count() - 1 > 0)
                                 {
+#if TRACE_LOG
                                     LogHelper.WriteToFile("Write List<Objects> Object ID : ", this, Program.FileName);
+#endif
                                     Serialize(ref objectID, 0, dFactory.Count() - 1);   // ID de l'objet (si plusieurs objets sont sérialisables
                                 }
+#if TRACE_LOG
                                 LogHelper.WriteToFile("Write List<Objects> Data : ", this, Program.FileName);
+#endif
                                 obj.Serialize(this);
                                 previousIndex = i;
                             }
@@ -151,6 +168,7 @@ namespace CommunicationProtocol.Serialization
             }
             return Error;
         }
+
         #endregion List of Serializable Objects  
     }
 }
