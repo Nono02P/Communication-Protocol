@@ -71,7 +71,7 @@ namespace CommunicationProtocol
         public void Shoot()
         {
             Random rnd = new Random();
-            int nb = 50; //rnd.Next(100);
+            int nb = 10; //rnd.Next(100);
             for (int i = 0; i < nb; i++)
             {
                 Bullets.Add(new Bullet() { Position = new Vector2(rnd.Next(4096)), Velocity = new Vector2(rnd.Next(30)), Type = (eAmmoType)rnd.Next(2), ShouldBeSend = true } );
@@ -86,19 +86,47 @@ namespace CommunicationProtocol
 
             if (!pSerializer.Error)
             {
+#if TRACE_LOG
+                LogHelper.WriteToFile("Serialize Tank : ", this, Program.FileName);
+                LogHelper.WriteToFile("     Bullets : ", this, Program.FileName);
+#endif
                 pSerializer.Serialize(Bullets, 255, true, delegate (Bullet b) { b.Parent = this; });
-                
+
+#if TRACE_LOG
+                LogHelper.WriteToFile("     SendName : ", this, Program.FileName);
+#endif
                 pSerializer.Serialize(ref _sendName);
                 if (_sendName)
+                {
+#if TRACE_LOG
+                    LogHelper.WriteToFile("     Name : ", this, Program.FileName);
+#endif
                     pSerializer.Serialize(ref name, 50);
+                }
 
+#if TRACE_LOG
+                LogHelper.WriteToFile("     SendPosition : ", this, Program.FileName);
+#endif
                 pSerializer.Serialize(ref _sendPosition);
                 if (_sendPosition)
+                {
+#if TRACE_LOG
+                    LogHelper.WriteToFile("     Position : ", this, Program.FileName);
+#endif
                     pSerializer.Serialize(ref position, Vector2.Zero, new Vector2(4096));
+                }
 
+#if TRACE_LOG
+                LogHelper.WriteToFile("     SendLife : ", this, Program.FileName);
+#endif
                 pSerializer.Serialize(ref _sendLife);
                 if (_sendLife)
+                {
+#if TRACE_LOG
+                    LogHelper.WriteToFile("     Life : ", this, Program.FileName);
+#endif
                     pSerializer.Serialize(ref life, 0, 100);
+                }
             }
 
             if (pSerializer is ReaderSerialize && !pSerializer.Error)
@@ -110,15 +138,17 @@ namespace CommunicationProtocol
                 if (_sendLife)
                     Life = life;
             }
-
+#if TRACE_LOG
+            LogHelper.WriteToFile("End of Tank : ", this, Program.FileName);
+#endif
             ShouldBeSend = pSerializer.Error;
             return pSerializer.Error;
         }
 
         public void Random()
         {
-            Position = _position.Randomize(new Vector2(0, 4097));
-            Life = Program.Rnd.Next(101);
+            Position = _position.Randomize(new Vector2(0, 4096));
+            Life = Program.Rnd.Next(100);
             Shoot();
         }
     }

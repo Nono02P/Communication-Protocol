@@ -151,7 +151,7 @@ namespace CommunicationProtocol
         private void ValidateNbOfBits(int pNbOfBits)
         {
             if (pNbOfBits < 1 || pNbOfBits > 32)
-                throw new Exception("Impossible to write a 32 bit type on more than 32 bits.");
+                throw new Exception("Impossible to write a 32 bit type on more than 32 bits or less than 0 bits.");
         }
 
         #region Vidage buffer

@@ -9,9 +9,6 @@ namespace CommunicationProtocol.Frames
     {
         public FrameReceiver() : base()
         {
-#if TRACE_LOG
-            Log("Init Receiver");
-#endif
             Serializer = new ReaderSerialize();
         }
 
@@ -26,13 +23,18 @@ namespace CommunicationProtocol.Frames
         {
             Serializer.BitPacking = BitPacker.FromArray(pData);
             uint crcValue = Serializer.BitPacking.ReadValue(CrcCheck.HashSize);             // CRC
-
+#if TRACE_LOG
+            Log("Read CRC : " + crcValue + " (" + CrcCheck.HashSize + "Bits)");
+#endif
             dCrcParameters.Check = crcValue;
 
             byte[] dataCrcCalculation = Serializer.BitPacking.GetByteBuffer();
             if (CrcCheck.IsRight(dataCrcCalculation))
             {
                 Sequence = (ushort)Serializer.BitPacking.ReadValue(SEQUENCE_SIZE);          // Sequence
+#if TRACE_LOG
+                Log("Read Sequence : " + Sequence + " (" + SEQUENCE_SIZE + "Bits)");
+#endif
                 List<Packet> result = new List<Packet>();
                 int id = 0;
 
@@ -40,16 +42,26 @@ namespace CommunicationProtocol.Frames
                 // et tant qu'il reste au moins 1 octet (parce que la fin d'un paquet se termine toujours par des 0 pour combler à l'octet supérieur).
                 while (Serializer.BitPacking.BitLength >= 8 && !Serializer.Error)
                 {
+#if TRACE_LOG
+                    Log("Packet ID : ");
+#endif
                     Serializer.Serialize(ref id, 0, dFactory.Count() - 1);                  // ID de paquet
 
                     Packet packet = dFactory.CreateInstance<Packet>(id);
+#if TRACE_LOG
+                    Log("Packet Data : ");
+#endif
                     if (packet.Serialize(Serializer))                                       // Data
                         result.Add(packet);
                 }
                 return result;
             }
             else
-                Console.WriteLine("Paquet refusé !");
+            {
+#if TRACE_LOG
+                Log("Paquet refusé !");
+#endif
+            }
             return null;
         }
     }

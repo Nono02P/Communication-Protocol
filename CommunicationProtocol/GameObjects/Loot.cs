@@ -52,13 +52,37 @@ namespace CommunicationProtocol
             int ammoType = (int)AmmoType;
             if (!pSerializer.Error)
             {
+#if TRACE_LOG
+                LogHelper.WriteToFile("Serialize Loot : ", this, Program.FileName);
+                LogHelper.WriteToFile("     IsActive : ", this, Program.FileName);
+#endif
                 pSerializer.Serialize(ref isActive);
+#if TRACE_LOG
+                LogHelper.WriteToFile("     SendPosition : ", this, Program.FileName);
+#endif
                 pSerializer.Serialize(ref _sendPosition);
                 if (_sendPosition)
+                {
+#if TRACE_LOG
+                LogHelper.WriteToFile("     SendPosition : ", this, Program.FileName);
+#endif
                     pSerializer.Serialize(ref position, Vector2.Zero, new Vector2(4096));
+                }
+
+#if TRACE_LOG
+                LogHelper.WriteToFile("     SendNbOfAmmo : ", this, Program.FileName);
+#endif
                 pSerializer.Serialize(ref _sendNbOfAmmo);
                 if (_sendNbOfAmmo)
+                {
+#if TRACE_LOG
+                LogHelper.WriteToFile("     NbOfAmmo : ", this, Program.FileName);
+#endif
                     pSerializer.Serialize(ref nbOfAmmo, 0, 100);
+                }
+#if TRACE_LOG
+                LogHelper.WriteToFile("     AmmoType : ", this, Program.FileName);
+#endif
                 pSerializer.Serialize(ref ammoType, 0, 1);
             }
 
@@ -73,7 +97,9 @@ namespace CommunicationProtocol
 
                 AmmoType = (eAmmoType)ammoType;
             }
-
+#if TRACE_LOG
+            LogHelper.WriteToFile("End of Bullet : ", this, Program.FileName);
+#endif
             ShouldBeSend = pSerializer.Error;
             return pSerializer.Error;
         }
@@ -81,8 +107,8 @@ namespace CommunicationProtocol
         public void Random()
         {
             Random rnd = Program.Rnd;
-            Position = _position.Randomize(new Vector2(4097));
-            NbOfAmmo = rnd.Next(101);
+            Position = _position.Randomize(new Vector2(4096));
+            NbOfAmmo = rnd.Next(100);
             AmmoType = (eAmmoType)Math.Round(rnd.NextDouble());
         }
     }

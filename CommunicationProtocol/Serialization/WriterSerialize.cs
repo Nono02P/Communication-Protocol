@@ -50,12 +50,12 @@ namespace CommunicationProtocol.Serialization
 
             if (!Error)
             {
-                long mappedValue = pValue - pMin;
+                uint mappedValue = (uint)(pValue - pMin);
                 int requiredBits = BitsRequired(pMin, pMax);
 #if TRACE_LOG
                 LogHelper.WriteToFile("Write integer : " + mappedValue + " (" + requiredBits + "Bits)", this, Program.FileName);
 #endif
-                BitPacking.WriteValue((uint)mappedValue, requiredBits);
+                BitPacking.WriteValue(mappedValue, requiredBits);
             }
             return Error;
         }
@@ -105,7 +105,7 @@ namespace CommunicationProtocol.Serialization
                 int nbOfObjects = pObjects.Count;
 
                 int counterObjects = 0;
-                int maxDif = 0;
+                int difBitSize = 0;
                 int previousIndex = 0;
                 for (int i = 0; i < nbOfObjects; i++)
                 {
@@ -113,57 +113,66 @@ namespace CommunicationProtocol.Serialization
                     if (obj.ShouldBeSend)
                     {
                         int dif = i - previousIndex;
-                        if (dif > maxDif)
+                        if (dif > difBitSize)
                         {
-                            maxDif = dif;
+                            difBitSize = dif;
                         }
                         previousIndex = i;
                         counterObjects++;
                     }
                 }
-#if TRACE_LOG
-                LogHelper.WriteToFile("Write List<Objects> Counter : ", this, Program.FileName);
-#endif
-                Serialize(ref counterObjects, 0, pNbMaxObjects);                        // Nombre d'objets transmis
 
                 if (counterObjects > 0)
                 {
+#if TRACE_LOG
+                    LogHelper.WriteToFile("Write List<Objects> Counter : ", this, Program.FileName);
+#endif
+                    Serialize(ref counterObjects, 0, pNbMaxObjects);                        // Nombre d'objets transmis
+
                     // 5 => Valeur = 0 à 31 (Nombre de bits pour encoder la différence d'index).
                     const int difBitEncoding = 5;
+                    
 #if TRACE_LOG
-                    LogHelper.WriteToFile("Write List<Objects> difference Bit Encoding : " + maxDif + " (" + difBitEncoding + "Bits)", this, Program.FileName);
+                    LogHelper.WriteToFile("Write List<Objects> difference Bit Encoding : " + difBitSize + " (" + difBitEncoding + "Bits)", this, Program.FileName);
 #endif
-                    BitPacking.WriteValue((uint)maxDif, difBitEncoding);                // Nombre de bits sur quoi sera encodé la différence d'index
-
+                    BitPacking.WriteValue((uint)difBitSize, difBitEncoding);                // Nombre de bits sur quoi sera encodé la différence d'index
                     previousIndex = 0;
-                    if (maxDif > 0)
+                    for (int i = 0; i < nbOfObjects; i++)
                     {
-                        for (int i = 0; i < nbOfObjects; i++)
+                        T obj = pObjects[i];
+                        if (obj.ShouldBeSend)
                         {
-                            T obj = pObjects[i];
-                            if (obj.ShouldBeSend)
+                            if (difBitSize > 0)
                             {
                                 int dif = i - previousIndex;
 #if TRACE_LOG
                                 LogHelper.WriteToFile("Write List<Objects> difference : ", this, Program.FileName);
 #endif
-                                Serialize(ref dif, 0, maxDif);                          // Différence d'index avec l'objet précédent
-                                int objectID = dFactory.GetID(obj);
-                                if (dFactory.Count() - 1 > 0)
-                                {
+                                Serialize(ref dif, 0, difBitSize);                          // Différence d'index avec l'objet précédent
 #if TRACE_LOG
-                                    LogHelper.WriteToFile("Write List<Objects> Object ID : ", this, Program.FileName);
+                                LogHelper.WriteToFile("Write List<Objects> index : " + i, this, Program.FileName);
 #endif
-                                    Serialize(ref objectID, 0, dFactory.Count() - 1);   // ID de l'objet (si plusieurs objets sont sérialisables
-                                }
-#if TRACE_LOG
-                                LogHelper.WriteToFile("Write List<Objects> Data : ", this, Program.FileName);
-#endif
-                                obj.Serialize(this);
-                                previousIndex = i;
                             }
+
+                            int objectID = dFactory.GetID(obj);
+                            if (dFactory.Count() - 1 > 0)
+                            {
+#if TRACE_LOG
+                                LogHelper.WriteToFile("Write List<Objects> Object ID : ", this, Program.FileName);
+#endif
+                                Serialize(ref objectID, 0, dFactory.Count() - 1);   // ID de l'objet (si plusieurs objets sont sérialisables
+                            }
+#if TRACE_LOG
+                            LogHelper.WriteToFile("Write List<Objects> Data : ", this, Program.FileName);
+#endif
+                            obj.Serialize(this);
+                            previousIndex = i;
                         }
                     }
+                }
+                else
+                {
+                    //Error = true;   // Pas d'objets à envoyer, le paquet n'a pas lieu d'être envoyé.
                 }
             }
             return Error;

@@ -28,9 +28,16 @@ namespace CommunicationProtocol.Frames.Packets
             if (Actors == null)
                 Actors = new List<IActor>();
 
+#if TRACE_LOG
+            LogHelper.WriteToFile("Serialize PacketB : ", this, Program.FileName);
+#endif
             pSerializer.Serialize(Actors, 255, true);
-            
-            return base.Serialize(pSerializer);
+
+            bool b = base.Serialize(pSerializer);
+#if TRACE_LOG
+            LogHelper.WriteToFile("End of PacketB : ", this, Program.FileName);
+#endif
+            return b;
         }
     }
 }

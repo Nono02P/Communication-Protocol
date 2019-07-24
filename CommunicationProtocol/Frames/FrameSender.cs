@@ -29,7 +29,7 @@ namespace CommunicationProtocol.Frames
             Serializer.BitPacking.Clear();
             Serializer.BitPacking.WriteValue(0, CrcCheck.HashSize);         // Ecriture d'un CRC vide
 #if TRACE_LOG
-            Log("CRC vide : " + 0 + " (" + CrcCheck.HashSize + "Bits)");
+            Log("Reserve Empty CRC : " + 0 + " (" + CrcCheck.HashSize + "Bits)");
 #endif
             Serializer.BitPacking.WriteValue(Sequence, SEQUENCE_SIZE);      // Ecriture de l'index de séquence
 #if TRACE_LOG
@@ -45,11 +45,11 @@ namespace CommunicationProtocol.Frames
             int bitCounter = Serializer.BitPacking.BitLength;
             int id = dFactory.GetID(pPacket);
 #if TRACE_LOG
-            Log("Packet ID : " + id + " (" + Serializer.BitsRequired(0, dFactory.Count() - 1) + "Bits)");
+            Log("Packet ID : ");
 #endif
             Serializer.Serialize(ref id, 0, dFactory.Count() - 1);                              // ID de paquet
 #if TRACE_LOG
-            Log("Data : ");
+            Log("Packet Data : ");
 #endif
             if (!pPacket.Serialize(Serializer))                                                 // Data
             {

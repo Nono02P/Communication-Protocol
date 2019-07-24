@@ -47,12 +47,13 @@ namespace CommunicationProtocol.Serialization
             if (!Error)
             {
                 int requiredBits = BitsRequired(pMin, pMax);
-                long value = BitPacking.ReadValue(requiredBits) + pMin;
+                uint mappedValue = BitPacking.ReadValue(requiredBits);
+                int value = (int)mappedValue + pMin;
 #if TRACE_LOG
-                LogHelper.WriteToFile("Read integer : " + value + "(" + requiredBits + "Bits)", this, Program.FileName);
+                LogHelper.WriteToFile("Read integer : " + mappedValue + " (" + requiredBits + "Bits)", this, Program.FileName);
 #endif
                 if (value >= pMin && value <= pMax)
-                    pValue = (int)value;
+                    pValue = value;
                 else
                     Error = true;
             }
@@ -68,7 +69,7 @@ namespace CommunicationProtocol.Serialization
                 int requiredBits = BitsRequired(0, pLengthMax);
                 int length = (int)BitPacking.ReadValue(requiredBits);
 #if TRACE_LOG
-                LogHelper.WriteToFile("Read string length : " + length + "(" + requiredBits + "Bits)", this, Program.FileName);
+                LogHelper.WriteToFile("Read string length : " + length + " (" + requiredBits + "Bits)", this, Program.FileName);
 #endif
                 if (length <= pLengthMax)
                 {
@@ -126,7 +127,9 @@ namespace CommunicationProtocol.Serialization
                             int dif = (int)BitPacking.ReadValue(difBitSize);
                             index += dif;                                               // Différence d'index avec l'objet précédent
 #if TRACE_LOG
-                            LogHelper.WriteToFile("Read List<Objects> difference : " + dif + " index : " + index + "(" + difBitSize + "Bits)", this, Program.FileName);
+                            LogHelper.WriteToFile("Read List<Objects> difference : ", this, Program.FileName);
+                            LogHelper.WriteToFile("Read integer : " + dif + " (" + difBitSize + "Bits)", this, Program.FileName);
+                            LogHelper.WriteToFile("Read List<Objects> index : " + index, this, Program.FileName);
 #endif
                         }
 

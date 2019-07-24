@@ -1,6 +1,4 @@
-﻿//#define TRACE_LOG
-
-using CommunicationProtocol.CRC;
+﻿using CommunicationProtocol.CRC;
 using CommunicationProtocol.Frames;
 using CommunicationProtocol.Frames.Packets;
 using CommunicationProtocol.Serialization;
@@ -30,14 +28,18 @@ namespace CommunicationProtocol
         #region Frames
         private static void TestFrames()
         {
+            FileName = "Receiver";
+            LogHelper.WriteToFile("Starting", "Program", FileName, true);
             FileName = "Sender";
+            LogHelper.WriteToFile("Starting", "Program", FileName, true);
+
             FrameSender sender = new FrameSender();
             ulong counter = 0;
             while (true)
             {
                 FileName = "Sender";
 #if TRACE_LOG
-                LogHelper.WriteToFile("Prepare to sending packet.", "Program", FileName, true);
+                LogHelper.WriteToFile("Prepare to sending packet.", "Program", FileName); //, true);
 #endif
                 List<Packet> sendPackets = new List<Packet>();
                 for (int i = 0; i < 1; i++)
@@ -59,7 +61,7 @@ namespace CommunicationProtocol
                 FileName = "Receiver";
                 FrameReceiver receiver = new FrameReceiver();
 #if TRACE_LOG
-                LogHelper.WriteToFile("Prepare to receive packet.", "Program", FileName, true);
+                LogHelper.WriteToFile("Prepare to receive packet.", "Program", FileName); //, true);
 #endif
                 List<Packet> packets = receiver.Receive(data);
                 counter++;
