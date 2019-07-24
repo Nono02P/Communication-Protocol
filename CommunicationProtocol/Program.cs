@@ -4,6 +4,7 @@ using CommunicationProtocol.Frames.Packets;
 using CommunicationProtocol.Serialization;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Numerics;
 
 
@@ -28,26 +29,27 @@ namespace CommunicationProtocol
         #region Frames
         private static void TestFrames()
         {
+#if TRACE_LOG
             FileName = "Receiver";
             LogHelper.WriteToFile("Starting", "Program", FileName, true);
             FileName = "Sender";
             LogHelper.WriteToFile("Starting", "Program", FileName, true);
-
+#endif
             FrameSender sender = new FrameSender();
             ulong counter = 0;
             while (true)
             {
                 FileName = "Sender";
 #if TRACE_LOG
-                LogHelper.WriteToFile("Prepare to sending packet.", "Program", FileName); //, true);
+                LogHelper.WriteToFile("Prepare to sending packet.", "Program", FileName, true);
 #endif
                 List<Packet> sendPackets = new List<Packet>();
                 for (int i = 0; i < 1; i++)
                 {
                     //Packet p = GetPacketB(); 
                     Packet p = RandomPacket();
-                    sender.InsertPacket(p);
-                    sendPackets.Add(p);
+                    if (sender.InsertPacket(p))
+                        sendPackets.Add(p);
                 }
 
                 byte[] data = sender.Send();
@@ -61,9 +63,10 @@ namespace CommunicationProtocol
                 FileName = "Receiver";
                 FrameReceiver receiver = new FrameReceiver();
 #if TRACE_LOG
-                LogHelper.WriteToFile("Prepare to receive packet.", "Program", FileName); //, true);
+                LogHelper.WriteToFile("Prepare to receive packet.", "Program", FileName, true);
 #endif
                 List<Packet> packets = receiver.Receive(data);
+                Debug.Assert(sendPackets.Count == packets.Count);
                 counter++;
             }
         }

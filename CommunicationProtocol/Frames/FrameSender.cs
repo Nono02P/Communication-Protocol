@@ -55,9 +55,21 @@ namespace CommunicationProtocol.Frames
 #endif
             if (!pPacket.Serialize(Serializer))                                                 // Data
             {
-                int dif = Serializer.BitPacking.BitLength - bitCounter;
-                Serializer.BitPacking.RemoveFromEnd(dif);
-                return false;
+#if DEBUG
+                if (pPacket is PacketB)
+#endif
+                {
+#if DEBUG
+                    PacketB p = (PacketB)pPacket;
+                    if (p.Actors.Count == 0)
+#endif
+                    {
+                        int dif = Serializer.BitPacking.BitLength - bitCounter;
+                        Serializer.BitPacking.RemoveFromEnd(dif);
+                        Serializer.Error = false;
+                        return false;
+                    }
+                }
             }
 
             if (Serializer.BitPacking.ByteLength > MTU)

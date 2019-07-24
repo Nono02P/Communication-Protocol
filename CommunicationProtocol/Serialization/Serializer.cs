@@ -20,7 +20,7 @@ namespace CommunicationProtocol.Serialization
         #endregion Public Fields
 
         #region Properties
-        public bool Error { get { return _error; } protected set { _error = value; } } // Debug.Assert(!value); } }
+        public bool Error { get { return _error; } set { _error = value; } } // Debug.Assert(!value); } }
         #endregion Properties  
 
         #region Constructor
