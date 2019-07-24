@@ -172,7 +172,7 @@ namespace CommunicationProtocol.Serialization
                 }
                 else
                 {
-                    //Error = true;   // Pas d'objets à envoyer, le paquet n'a pas lieu d'être envoyé.
+                    Error = true;   // Pas d'objets à envoyer, le paquet n'a pas lieu d'être envoyé.
                 }
             }
             return Error;

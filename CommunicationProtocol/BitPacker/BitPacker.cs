@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 
 namespace CommunicationProtocol
 {
@@ -50,7 +51,7 @@ namespace CommunicationProtocol
             BitIndex = pBitLength % BUFFER_BIT_SIZE;
             WordIndex = pBitLength / BUFFER_BIT_SIZE;
         }
-        #endregion
+        #endregion Constructeur
 
         #region Remplissage buffer
         public static BitPacker FromArray(byte[] pBuffer, bool pPushTempInBuffer = true)
@@ -146,7 +147,7 @@ namespace CommunicationProtocol
                 }
             }
         }
-        #endregion
+        #endregion Remplissage buffer
 
         private void ValidateNbOfBits(int pNbOfBits)
         {
@@ -219,17 +220,44 @@ namespace CommunicationProtocol
             }
         }
 
+        public void RemoveFromEnd(int pNbOfBits)
+        {
+            if (pNbOfBits > 0)
+            {
+                int wordToRemove = pNbOfBits / BUFFER_BIT_SIZE;
+                int bitsToRemove = pNbOfBits % BUFFER_BIT_SIZE;
+                Span<uint> data = new Span<uint>(_buffer, WordIndex - wordToRemove, wordToRemove + (int)Math.Ceiling((decimal)bitsToRemove / BUFFER_BIT_SIZE));
+                ulong mask = (1ul << (BitIndex - bitsToRemove)) - 1;
+                if (wordToRemove > 0)
+                {
+                    _temp = data[0] & mask;
+                }
+                else
+                {
+                    _temp &= mask;
+                }
+                data.Clear();
+                data[0] = (uint)_temp;
+                BitIndex -= bitsToRemove;
+                WordIndex -= wordToRemove;
+            }
+        }
+
         public void Clear()
         {
             if (_buffer != null)
-                GetSpanBuffer().Clear();
+            {
+                new Span<uint>(_buffer).Clear();
+            }
             else
+            {
                 _buffer = new uint[DEFAULT_BUFFER_SIZE];
+            }
             _temp = 0;
             BitIndex = 0;
             WordIndex = 0;
         }
-        #endregion
+        #endregion Vidage buffer
 
         #region Transformations
         public byte[] GetByteBuffer()
@@ -264,8 +292,9 @@ namespace CommunicationProtocol
 
         public Span<uint> GetSpanBuffer()
         {
-            int start = _offsetBitReaded / BUFFER_BIT_SIZE;
-            return new Span<uint>(_buffer, start, (int)Math.Ceiling((decimal)BitLength / BUFFER_BIT_SIZE)); // - start);
+            int wordStart = _offsetBitReaded / BUFFER_BIT_SIZE;
+            int bitStart = _offsetBitReaded % BUFFER_BIT_SIZE;
+            return new Span<uint>(_buffer, wordStart, (int)Math.Ceiling((decimal)(BitLength + bitStart) / BUFFER_BIT_SIZE)); // - start);
         }
 
         public override string ToString()
@@ -279,6 +308,6 @@ namespace CommunicationProtocol
             }
             return result;
         }
-        #endregion
+        #endregion Transformations
     }
 }

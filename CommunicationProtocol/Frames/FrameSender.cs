@@ -2,6 +2,7 @@
 using CommunicationProtocol.Frames.Packets;
 using CommunicationProtocol.Serialization;
 using System;
+using System.Diagnostics;
 
 namespace CommunicationProtocol.Frames
 {
@@ -42,6 +43,7 @@ namespace CommunicationProtocol.Frames
             if (_shouldClean)
                 PrepareFrame();
 
+            Debug.Assert(!Program.StopOnSequence.HasValue || Sequence != Program.StopOnSequence.Value);
             int bitCounter = Serializer.BitPacking.BitLength;
             int id = dFactory.GetID(pPacket);
 #if TRACE_LOG
@@ -54,7 +56,8 @@ namespace CommunicationProtocol.Frames
             if (!pPacket.Serialize(Serializer))                                                 // Data
             {
                 int dif = Serializer.BitPacking.BitLength - bitCounter;
-                // TODO : Créer une fonction pour retirer un nombre de bits au bitPacker.
+                Serializer.BitPacking.RemoveFromEnd(dif);
+                return false;
             }
 
             if (Serializer.BitPacking.ByteLength > MTU)

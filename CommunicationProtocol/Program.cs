@@ -12,11 +12,11 @@ namespace CommunicationProtocol
     class Program
     {
         public static string FileName;
-        public static Random Rnd;
+        public static Random Rnd = new Random(1);
+        public static int? StopOnSequence = null;
 
         static void Main(string[] args)
         {
-            Rnd = new Random();
             TestFrames();
             //TestSerializerPacketA();
             //TestSerializerPacketB();
@@ -44,8 +44,8 @@ namespace CommunicationProtocol
                 List<Packet> sendPackets = new List<Packet>();
                 for (int i = 0; i < 1; i++)
                 {
-                    Packet p = GetPacketB(); 
-                    //Packet p = RandomPacket();
+                    //Packet p = GetPacketB(); 
+                    Packet p = RandomPacket();
                     sender.InsertPacket(p);
                     sendPackets.Add(p);
                 }

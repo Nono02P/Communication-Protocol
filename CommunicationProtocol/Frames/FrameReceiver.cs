@@ -2,6 +2,7 @@
 using CommunicationProtocol.Serialization;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 
 namespace CommunicationProtocol.Frames
 {
@@ -35,6 +36,7 @@ namespace CommunicationProtocol.Frames
 #if TRACE_LOG
                 Log("Read Sequence : " + Sequence + " (" + SEQUENCE_SIZE + "Bits)");
 #endif
+                Debug.Assert(!Program.StopOnSequence.HasValue || Sequence != Program.StopOnSequence.Value);
                 List<Packet> result = new List<Packet>();
                 int id = 0;
 

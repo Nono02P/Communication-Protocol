@@ -70,7 +70,7 @@ namespace CommunicationProtocol
 
         public void Shoot()
         {
-            Random rnd = new Random();
+            Random rnd = Program.Rnd;
             int nb = 10; //rnd.Next(100);
             for (int i = 0; i < nb; i++)
             {
