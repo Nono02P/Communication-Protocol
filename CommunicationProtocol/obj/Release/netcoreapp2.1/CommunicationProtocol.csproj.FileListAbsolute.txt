@@ -8,3 +8,4 @@ C:\Users\PierArn\Documents\Perso\Jeux Video\C#\CommunicationProtocol\Communicati
 C:\Users\PierArn\Documents\Perso\Jeux Video\C#\CommunicationProtocol\CommunicationProtocol\obj\Release\netcoreapp2.1\CommunicationProtocol.AssemblyInfo.cs
 C:\Users\PierArn\Documents\Perso\Jeux Video\C#\CommunicationProtocol\CommunicationProtocol\obj\Release\netcoreapp2.1\CommunicationProtocol.dll
 C:\Users\PierArn\Documents\Perso\Jeux Video\C#\CommunicationProtocol\CommunicationProtocol\obj\Release\netcoreapp2.1\CommunicationProtocol.pdb
+C:\Users\PierArn\Documents\Perso\Jeux Video\C#\CommunicationProtocol\CommunicationProtocol\obj\Release\netcoreapp2.1\CommunicationProtocol.csprojAssemblyReference.cache

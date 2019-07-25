@@ -40,5 +40,29 @@ namespace CommunicationProtocol.Frames
             CrcCheck = new Crc(dCrcParameters);
             dFactory = PacketFactory.GetFactory();
         }
+
+
+        /// <summary>
+        /// Vérifie l'ordre des séquences et renvoie true si la séquence 1 est plus récente que la séquence 2. 
+        /// </summary>
+        /// <param name="pS1">Séquence 1</param>
+        /// <param name="pS2">Séquence 2</param>
+        /// <returns></returns>
+        public bool SequenceGreatherThan(uint pS1, uint pS2)
+        {
+            return ((pS1 > pS2) && (pS1 - pS2 <= 32768)) ||
+               ((pS1 < pS2) && (pS2 - pS1 > 32768));
+        }
+
+        /// <summary>
+        /// Vérifie l'ordre des séquences et renvoie true si la séquence 1 est moins récente que la séquence 2. 
+        /// </summary>
+        /// <param name="pS1">Séquence 1</param>
+        /// <param name="pS2">Séquence 2</param>
+        /// <returns></returns>
+        public bool SequenceLessThan(uint pS1, uint pS2)
+        {
+            return SequenceGreatherThan(pS2, pS1);
+        }
     }
 }
