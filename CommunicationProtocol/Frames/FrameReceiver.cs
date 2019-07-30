@@ -1,6 +1,5 @@
 ﻿using CommunicationProtocol.Frames.Packets;
 using CommunicationProtocol.Serialization;
-using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 

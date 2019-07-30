@@ -1,15 +1,36 @@
 ﻿using CommunicationProtocol.ExtensionMethods;
 using CommunicationProtocol.Serialization;
+using System;
 using System.Numerics;
 
 namespace CommunicationProtocol.Frames.Packets
 {
     public class PacketA : Packet
     {
+        private const float _POSITION_RESOLUTION = 0.01f;
+        private const float _F_RESOLUTION = 0.01f;
+
         public Vector3 Position;
         public float f;
         public string comment;
-
+        
+        public override bool Equals(Packet other)
+        {
+            if (other is PacketA)
+            {
+                PacketA o = (PacketA)other;
+                bool checkString = false;
+                if (string.IsNullOrEmpty(comment) && string.IsNullOrEmpty(o.comment))
+                    checkString = true;
+                else
+                    checkString = comment == o.comment;
+                return Position.ApplyResolution(_POSITION_RESOLUTION) == o.Position.ApplyResolution(_POSITION_RESOLUTION) &
+                    f.ApplyResolution(_F_RESOLUTION) == o.f.ApplyResolution(_F_RESOLUTION) &
+                    checkString;
+            }
+            return false;
+        }
+        
         public override void Random()
         {
             Position.Randomize(new Vector3(-30, 0, 0), new Vector3(100, 700, 190));
@@ -22,11 +43,11 @@ namespace CommunicationProtocol.Frames.Packets
             LogHelper.WriteToFile("Serialize PacketA : ", this, Program.FileName);
             LogHelper.WriteToFile("     Position : ", this, Program.FileName);
 #endif
-            pSerializer.Serialize(ref Position, new Vector3(-30, 0, 0), new Vector3(100, 700, 190), 0.01f);
+            pSerializer.Serialize(ref Position, new Vector3(-30, 0, 0), new Vector3(100, 700, 190), _POSITION_RESOLUTION);
 #if TRACE_LOG
             LogHelper.WriteToFile("     f : ", this, Program.FileName);
 #endif
-            pSerializer.Serialize(ref f, 0, 100f, 0.01f);
+            pSerializer.Serialize(ref f, 0, 100f, _F_RESOLUTION);
 #if TRACE_LOG
             LogHelper.WriteToFile("     Comment : ", this, Program.FileName);
 #endif

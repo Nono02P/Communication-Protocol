@@ -1,12 +1,14 @@
 ﻿using CommunicationProtocol.Serialization;
+using System;
 using System.Diagnostics;
 
 namespace CommunicationProtocol.Frames.Packets
 {
-    public abstract class Packet
+    public abstract class Packet : IEquatable<Packet>
     {
         protected const int SerializationCheck = 1431655766;
 
+        public abstract bool Equals(Packet other);
         public abstract void Random();
         public virtual bool Serialize(Serializer pSerializer)
         {

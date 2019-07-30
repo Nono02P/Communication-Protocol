@@ -1,4 +1,5 @@
-﻿using CommunicationProtocol.Serialization;
+﻿using CommunicationProtocol.ExtensionMethods;
+using CommunicationProtocol.Serialization;
 using System;
 using System.Numerics;
 
@@ -6,10 +7,8 @@ namespace CommunicationProtocol
 {
     public class Loot : IActor
     {
-
         public bool ShouldBeSend { get; set; }
         public bool IsActive { get; set; }
-
 
         private bool _sendPosition;
         private Vector2 _position;
@@ -25,7 +24,6 @@ namespace CommunicationProtocol
                 }
             }
         }
-
 
         private bool _sendNbOfAmmo;
         private int _nbOfAmmo;
@@ -107,9 +105,23 @@ namespace CommunicationProtocol
         public void Random()
         {
             Random rnd = Program.Rnd;
+            _sendPosition = true;
             Position = _position.Randomize(new Vector2(4096));
             NbOfAmmo = rnd.Next(100);
             AmmoType = (eAmmoType)Math.Round(rnd.NextDouble());
+        }
+
+        public bool Equals(IActor other)
+        {
+            if (other is Loot)
+            {
+                Loot o = (Loot)other;
+                return IsActive == o.IsActive &
+                    AmmoType == o.AmmoType &
+                    NbOfAmmo == o.NbOfAmmo &
+                    _position.ApplyResolution() == o._position.ApplyResolution();
+            }
+            return false;
         }
     }
 }

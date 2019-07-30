@@ -8,12 +8,33 @@ namespace CommunicationProtocol.Frames.Packets
     {
         public List<IActor> Actors;
 
+        public override bool Equals(Packet other)
+        {
+            if (other is PacketB)
+            {
+                PacketB o = (PacketB)other;
+                if (Actors?.Count == o.Actors?.Count)
+                {
+                    for (int i = 0; i < Actors.Count; i++)
+                    {
+                        IActor itemA = Actors[i];
+                        IActor itemB = o.Actors[i];
+                        if (!itemA.Equals(itemB))
+                            return false;
+                    }
+                    return true;
+                }
+                return false;
+            }
+            return false;
+        }
+
         public override void Random()
         {
             Actors = new List<IActor>();
             SerializerFactory factory = SerializerFactory.GetFactory();
             Random rnd = Program.Rnd;
-            int nb = rnd.Next(20);
+            int nb = rnd.Next(25);
             for (int i = 0; i < nb; i++)
             {
                 int id = rnd.Next(factory.Count());

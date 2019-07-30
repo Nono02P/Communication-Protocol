@@ -1,4 +1,5 @@
-﻿using CommunicationProtocol.Serialization;
+﻿using CommunicationProtocol.ExtensionMethods;
+using CommunicationProtocol.Serialization;
 using System;
 using System.Numerics;
 
@@ -124,9 +125,32 @@ namespace CommunicationProtocol
 
         public void Random()
         {
+            _sendPosition = true;
+            _sendVelocity = true;
             Position = _position.Randomize(new Vector2(4096));
             Velocity = _velocity.Randomize(new Vector2(30));
             Type = (eAmmoType)Math.Round(Program.Rnd.NextDouble());
+        }
+
+        public bool Equals(IActor other)
+        {
+            if (other is Bullet)
+            {
+                Bullet o = (Bullet)other;
+                bool checkParent = false;
+                if (Parent != null && o.Parent != null)
+                {
+                    if (Parent.Equals(o?.Parent))
+                        checkParent = true;
+                }
+                else
+                    checkParent = Parent == o.Parent;
+                return checkParent &
+                        _position.ApplyResolution() == o._position.ApplyResolution() &
+                        Type == o.Type &
+                        _velocity.ApplyResolution() == o._velocity.ApplyResolution();
+            }
+            return false;
         }
     }
 }

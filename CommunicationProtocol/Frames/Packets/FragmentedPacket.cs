@@ -7,6 +7,11 @@ namespace CommunicationProtocol.Frames.Packets
         private int _fragmentID;
         private int _numberOfFragments;
 
+        public override bool Equals(Packet other)
+        {
+            throw new System.NotImplementedException();
+        }
+
         public override void Random()
         {
             throw new System.NotImplementedException();

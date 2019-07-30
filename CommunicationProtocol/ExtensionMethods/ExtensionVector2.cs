@@ -1,10 +1,15 @@
 ﻿using System;
 using System.Numerics;
 
-namespace CommunicationProtocol
+namespace CommunicationProtocol.ExtensionMethods
 {
     public static class ExtensionVector2
     {
+        public static Vector2 ApplyResolution(this ref Vector2 pVector, float pResolution = 1)
+        {
+            return new Vector2(pVector.X.ApplyResolution(pResolution), pVector.Y.ApplyResolution(pResolution));
+        }
+
         public static Vector2 Randomize(this ref Vector2 pVector, float pMinX, float pMaxX, float pMinY, float pMaxY)
         {
             Random rnd = Program.Rnd;

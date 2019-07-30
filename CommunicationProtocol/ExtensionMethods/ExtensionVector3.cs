@@ -5,6 +5,11 @@ namespace CommunicationProtocol.ExtensionMethods
 {
     public static class ExtensionVector3
     {
+        public static Vector3 ApplyResolution(this ref Vector3 pVector, float pResolution = 1)
+        {
+            return new Vector3(pVector.X.ApplyResolution(pResolution), pVector.Y.ApplyResolution(pResolution), pVector.Z.ApplyResolution(pResolution));
+        }
+
         public static Vector3 Randomize(this ref Vector3 pVector, float pMinX, float pMaxX, float pMinY, float pMaxY, float pMinZ, float pMaxZ)
         {
             Random rnd = Program.Rnd;

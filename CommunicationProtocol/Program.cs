@@ -23,6 +23,7 @@ namespace CommunicationProtocol
             //TestSerializerPacketB();
             //TestBitPacker();
             //TestCRC();
+            
             Console.Read();
         }
 
@@ -53,20 +54,30 @@ namespace CommunicationProtocol
                 }
 
                 byte[] data = sender.Send();
+                /*
                 string message = string.Empty;
                 for (int i = data.Length - 1; i >= 0; i--)
                 {
                     message += data[i] + " ";
                 }
                 Console.WriteLine(message);
+                */
 
                 FileName = "Receiver";
                 FrameReceiver receiver = new FrameReceiver();
 #if TRACE_LOG
                 LogHelper.WriteToFile("Prepare to receive packet.", "Program", FileName, true);
 #endif
-                List<Packet> packets = receiver.Receive(data);
-                Debug.Assert(sendPackets.Count == packets.Count);
+                List<Packet> readPackets = receiver.Receive(data);
+                Debug.Assert(sendPackets.Count == readPackets.Count);
+                for (int i = 0; i < sendPackets.Count; i++)
+                {
+                    Packet itemA = sendPackets[i];
+                    Packet itemB = readPackets[i];
+                    Debug.Assert(itemA.Equals(itemB));
+                    itemA.Equals(itemB);
+                }
+                Console.WriteLine(counter);
                 counter++;
             }
         }

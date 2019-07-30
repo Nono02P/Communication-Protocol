@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 
 namespace CommunicationProtocol
 {
@@ -271,13 +270,12 @@ namespace CommunicationProtocol
 
             for (int i = 0; i < span.Length; i++)
             {
-                uint currentInt = span[i];
                 for (int j = 0; j < nbOfBytePerBufferElement; j++)
                 {
                     int byteIndex = i * nbOfBytePerBufferElement + j;
                     if (byteIndex >= lengthInByte)
                         break;
-                    result[byteIndex] = (byte)((currentInt & (0xFF << j * 8)) >> j * 8);
+                    result[byteIndex] = (byte)((span[i] & (0xFF << j * 8)) >> j * 8);
                     counter++;
                 }
             }
