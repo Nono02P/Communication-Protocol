@@ -1,29 +1,30 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Runtime.InteropServices;
 
 namespace CommunicationProtocol
 {
     public struct BitPacker
     {
-        #region Constantes
+        #region Constants
         private const int DEFAULT_BUFFER_SIZE = 300;
-        private const int BUFFER_BIT_SIZE = 32;     // Nombre de bits dépendant du type de données de la liste _buffer (List<uint> => 32 bits)
-        #endregion
+        private const int BUFFER_BIT_SIZE = 32;     // Number of bits of an element of _buffer (List<uint> => 32 bits)
+        #endregion Constants
 
-        #region Variables privées
+        #region Private Variables
         private uint[] _buffer;
-        private ulong _temp;            // Tampon utilisé avant de pousser dans le buffer
+        private ulong _temp;            // Tempory var used before push in the buffer (for easily manage the overflow).
         private int _offsetBitReaded;
-        #endregion
+        #endregion Private Variables
 
-        #region Propriétés
+        #region Properties
         public int BitIndex { get; private set; }
         public int WordIndex { get; private set; }
         public int BitLength { get { return BitIndex + WordIndex * BUFFER_BIT_SIZE; } }
         public int ByteLength { get { return (int)Math.Ceiling(BitLength / (decimal)8); } }
-        #endregion
+        #endregion Properties
 
-        #region Constructeur
+        #region Constructor
         public BitPacker(int pByteBufferSize)
         {
             _buffer = new uint[pByteBufferSize / 4];
@@ -50,9 +51,9 @@ namespace CommunicationProtocol
             BitIndex = pBitLength % BUFFER_BIT_SIZE;
             WordIndex = pBitLength / BUFFER_BIT_SIZE;
         }
-        #endregion Constructeur
+        #endregion Constructor
 
-        #region Remplissage buffer
+        #region Fill buffer
         public static BitPacker FromArray(byte[] pBuffer, bool pPushTempInBuffer = true)
         {
             BitPacker result = new BitPacker();
@@ -110,7 +111,7 @@ namespace CommunicationProtocol
             uint maskNbOfBits = (uint)((1ul << pNbOfBits) - 1) << start;
 
             _buffer[bufferWordIndex] = (_buffer[bufferWordIndex] & ~maskNbOfBits) | (maskNbOfBits & (pValue << start));
-            // Si la valeur à écrire se chevauche sur deux registres.
+            // If the value to be written overlaps on two registers.
             if (BUFFER_BIT_SIZE < start + pNbOfBits && bufferWordIndex + 1 <= WordIndex)
             {
                 int s = start - BUFFER_BIT_SIZE + pNbOfBits;
@@ -146,15 +147,9 @@ namespace CommunicationProtocol
                 }
             }
         }
-        #endregion Remplissage buffer
+        #endregion Fill buffer 
 
-        private void ValidateNbOfBits(int pNbOfBits)
-        {
-            if (pNbOfBits < 1 || pNbOfBits > 32)
-                throw new Exception("Impossible to write a 32 bit type on more than 32 bits or less than 0 bits.");
-        }
-
-        #region Vidage buffer
+        #region Emptying buffer
         public uint ReadValue(int pNbOfBits, bool pRemoveBits = true, int pStartPosition = 0)
         {
             ValidateNbOfBits(pNbOfBits);
@@ -173,7 +168,7 @@ namespace CommunicationProtocol
                     }
                     uint maskNbOfBits = (uint)((1ul << pNbOfBits) - 1);
                     ulong result = (spanBuffer[bufferWordIndex] & maskNbOfBits << start) >> start;
-                    // Si la valeur à lire se chevauche sur deux registres.
+                    // If the value to be written overlaps on two registers
                     if (BUFFER_BIT_SIZE < start + pNbOfBits && bufferWordIndex + 1 < spanBuffer.Length)
                     {
                         int s = start - BUFFER_BIT_SIZE + pNbOfBits;
@@ -256,43 +251,21 @@ namespace CommunicationProtocol
             BitIndex = 0;
             WordIndex = 0;
         }
-        #endregion Vidage buffer
+        #endregion Emptying buffer
 
         #region Transformations
         public byte[] GetByteBuffer()
         {
-            int counter = 0;
-            int nbOfBytePerBufferElement = BUFFER_BIT_SIZE / 8;
-            int lengthInByte = (int)Math.Ceiling((double)BitLength / 8);
-            byte[] result = new byte[lengthInByte];
-
-            Span<uint> span = GetSpanBuffer();
-
-            for (int i = 0; i < span.Length; i++)
-            {
-                for (int j = 0; j < nbOfBytePerBufferElement; j++)
-                {
-                    int byteIndex = i * nbOfBytePerBufferElement + j;
-                    if (byteIndex >= lengthInByte)
-                        break;
-                    result[byteIndex] = (byte)((span[i] & (0xFF << j * 8)) >> j * 8);
-                    counter++;
-                }
-            }
-            for (int i = 0; i < 8; i++)
-            {
-                if (counter + i >= result.Length)
-                    break;
-                result[counter + i] = (byte)((_temp & (ulong)(0xFF << i * 8)) >> i * 8);
-            }
-            return result;
+            // Cast (uint => byte) and remove (Slice) the end if the number of byte isn't a multiple of 4.
+            Span<byte> spanByte = MemoryMarshal.Cast<uint, byte>(GetSpanBuffer()).Slice(0, ByteLength);
+            return spanByte.ToArray();
         }
 
         public Span<uint> GetSpanBuffer()
         {
             int wordStart = _offsetBitReaded / BUFFER_BIT_SIZE;
             int bitStart = _offsetBitReaded % BUFFER_BIT_SIZE;
-            return new Span<uint>(_buffer, wordStart, (int)Math.Ceiling((decimal)(BitLength + bitStart) / BUFFER_BIT_SIZE)); // - start);
+            return new Span<uint>(_buffer, wordStart, (int)Math.Ceiling((decimal)(BitLength + bitStart) / BUFFER_BIT_SIZE));
         }
 
         public override string ToString()
@@ -307,5 +280,13 @@ namespace CommunicationProtocol
             return result;
         }
         #endregion Transformations
+
+        #region Help Functions
+        private void ValidateNbOfBits(int pNbOfBits)
+        {
+            if (pNbOfBits < 1 || pNbOfBits > 32)
+                throw new Exception("Impossible to write a 32 bit type on more than 32 bits or less than 0 bits.");
+        }
+        #endregion Help Functions  
     }
 }
