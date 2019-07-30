@@ -28,11 +28,11 @@ namespace CommunicationProtocol.Frames
         {
             _shouldClean = false;
             Serializer.BitPacking.Clear();
-            Serializer.BitPacking.WriteValue(0, CrcCheck.HashSize);         // Ecriture d'un CRC vide
+            Serializer.BitPacking.WriteValue(0, CrcCheck.HashSize);         // Write an empty CRC
 #if TRACE_LOG
             Log("Reserve Empty CRC : " + 0 + " (" + CrcCheck.HashSize + "Bits)");
 #endif
-            Serializer.BitPacking.WriteValue(Sequence, SEQUENCE_SIZE);      // Ecriture de l'index de séquence
+            Serializer.BitPacking.WriteValue(Sequence, SEQUENCE_SIZE);      // Write the Sequence index
 #if TRACE_LOG
             Log("Sequence : " + Sequence + " (" + SEQUENCE_SIZE + "Bits)");
 #endif
@@ -49,7 +49,7 @@ namespace CommunicationProtocol.Frames
 #if TRACE_LOG
             Log("Packet ID : ");
 #endif
-            Serializer.Serialize(ref id, 0, dFactory.Count() - 1);                              // ID de paquet
+            Serializer.Serialize(ref id, 0, dFactory.Count() - 1);                              // Packet ID
 #if TRACE_LOG
             Log("Packet Data : ");
 #endif
@@ -88,16 +88,10 @@ namespace CommunicationProtocol.Frames
 
             CrcCheck.ComputeHash(data, crcByteLength, data.Length - crcByteLength);
             dCrcValue = (int)CrcHelper.FromBigEndian(CrcCheck.Hash, CrcCheck.HashSize);
-
-            /*
-            for (int i = 0; i < CrcCheck.HashSize / 8; i++)
-            {
-                data[i] = CrcCheck.Hash[7 - i];
-            }
-            */
-            Serializer.BitPacking.OverrideValue((uint)dCrcValue, CrcCheck.HashSize);            // Ecriture du CRC au début de la frame (zone réservée)
+            
+            Serializer.BitPacking.OverrideValue((uint)dCrcValue, CrcCheck.HashSize);            // Write the CRC at the frame start (reserved area)
             data = Serializer.BitPacking.GetByteBuffer();
-            //
+            
             Sequence++;
             _shouldClean = true;
             return data;

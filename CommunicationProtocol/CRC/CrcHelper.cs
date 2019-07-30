@@ -7,38 +7,6 @@ namespace CommunicationProtocol.CRC
         #region internal
 
         #region reverseBits
-
-        /*internal static byte ReverseBits(byte b)
-        {
-            byte newValue = 0;
-            for (int i = 7; i >= 0; i--)
-            {
-                newValue |= (byte)((b & 1) << i);
-                b >>= 1;
-            }
-            return newValue;
-        }
-        internal static ushort ReverseBits(ushort us)
-        {
-            ushort newValue = 0;
-            for (int i = 15; i >= 0; i--)
-            {
-                newValue |= (ushort)((us & 1) << i);
-                us >>= 1;
-            }
-            return newValue;
-        }
-        internal static uint ReverseBits(uint ui)
-        {
-            uint newValue = 0;
-            for (int i = 31; i >= 0; i--)
-            {
-                newValue |= (ui & 1) << i;
-                ui >>= 1;
-            }
-            return newValue;
-        }*/
-
         internal static ulong ReverseBits(ulong ul, int valueLength)
         {
             ulong newValue = 0;
@@ -58,7 +26,7 @@ namespace CommunicationProtocol.CRC
 
         internal static byte[] ToBigEndianBytes(uint value)
         {
-            var result = BitConverter.GetBytes(value);
+            byte[] result = BitConverter.GetBytes(value);
 
             if (BitConverter.IsLittleEndian)
                 Array.Reverse(result);
@@ -68,7 +36,7 @@ namespace CommunicationProtocol.CRC
 
         internal static byte[] ToBigEndianBytes(ushort value)
         {
-            var result = BitConverter.GetBytes(value);
+            byte[] result = BitConverter.GetBytes(value);
 
             if (BitConverter.IsLittleEndian)
                 Array.Reverse(result);
@@ -78,7 +46,7 @@ namespace CommunicationProtocol.CRC
 
         internal static byte[] ToBigEndianBytes(ulong value)
         {
-            var result = BitConverter.GetBytes(value);
+            byte[] result = BitConverter.GetBytes(value);
 
             if (BitConverter.IsLittleEndian)
                 Array.Reverse(result);

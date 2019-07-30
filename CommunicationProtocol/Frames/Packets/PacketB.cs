@@ -1,4 +1,5 @@
-﻿using CommunicationProtocol.Serialization;
+﻿using CommunicationProtocol.Factories;
+using CommunicationProtocol.Serialization;
 using System;
 using System.Collections.Generic;
 

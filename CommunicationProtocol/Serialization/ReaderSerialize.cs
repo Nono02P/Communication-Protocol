@@ -115,9 +115,7 @@ namespace CommunicationProtocol.Serialization
 
                 if (nbOfObjects > 0)
                 {
-                    // 5 => Valeur = 0 à 31 (Nombre de bits pour encoder la différence d'index).
-                    const int difBitEncoding = 5; 
-                    int difBitSize = (int)BitPacking.ReadValue(difBitEncoding);         // Nombre de bits sur quoi sera encodé la différence d'index
+                    int difBitSize = (int)BitPacking.ReadValue(d_INDEX_DIFFERENCE_BIT_ENCODING);    // Number of bits on which will be encoded the index difference
 #if TRACE_LOG
                     LogHelper.WriteToFile("Read List<Objects> difference Bit Encoding : " + difBitSize + " (" + difBitEncoding + "Bits)", this, Program.FileName);
 #endif
@@ -127,7 +125,7 @@ namespace CommunicationProtocol.Serialization
                         if (difBitSize > 0)
                         {
                             int dif = (int)BitPacking.ReadValue(difBitSize);
-                            index += dif;                                               // Différence d'index avec l'objet précédent
+                            index += dif;                                               // Index difference with the previous object.
 #if TRACE_LOG
                             LogHelper.WriteToFile("Read List<Objects> difference : ", this, Program.FileName);
                             LogHelper.WriteToFile("Read integer : " + dif + " (" + difBitSize + "Bits)", this, Program.FileName);
@@ -141,7 +139,7 @@ namespace CommunicationProtocol.Serialization
 #if TRACE_LOG
                             LogHelper.WriteToFile("Read List<Objects> Object ID : ", this, Program.FileName);
 #endif
-                            Serialize(ref objectID, 0, dFactory.Count() - 1);           // ID de l'objet (si plusieurs objets sont sérialisables
+                            Serialize(ref objectID, 0, dFactory.Count() - 1);           // Object ID (If there is more than 1 serializable object)
                         }
                         T obj = default(T);
                         if (pObjects.Count > index)

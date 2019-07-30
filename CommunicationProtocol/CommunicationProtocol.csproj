@@ -6,5 +6,8 @@
     <TargetFramework>netcoreapp2.1</TargetFramework>
     <LangVersion>7.2</LangVersion>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <AllowUnsafeBlocks>false</AllowUnsafeBlocks>
+  </PropertyGroup>
 
 </Project>

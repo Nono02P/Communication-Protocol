@@ -1,5 +1,5 @@
 ﻿using CommunicationProtocol.CRC;
-using CommunicationProtocol.Frames.Packets;
+using CommunicationProtocol.Factories;
 using CommunicationProtocol.Serialization;
 
 namespace CommunicationProtocol.Frames
@@ -43,11 +43,11 @@ namespace CommunicationProtocol.Frames
 
 
         /// <summary>
-        /// Vérifie l'ordre des séquences et renvoie true si la séquence 1 est plus récente que la séquence 2. 
+        /// Check the sequences order and return true if the S1 is newer than S2.
         /// </summary>
-        /// <param name="pS1">Séquence 1</param>
-        /// <param name="pS2">Séquence 2</param>
-        /// <returns></returns>
+        /// <param name="pS1">Sequence 1</param>
+        /// <param name="pS2">Sequence 2</param>
+        /// <returns>Return a boolean that is equal to true if S1 is newer than S2.</returns>
         public bool SequenceGreatherThan(uint pS1, uint pS2)
         {
             return ((pS1 > pS2) && (pS1 - pS2 <= 32768)) ||
@@ -55,11 +55,11 @@ namespace CommunicationProtocol.Frames
         }
 
         /// <summary>
-        /// Vérifie l'ordre des séquences et renvoie true si la séquence 1 est moins récente que la séquence 2. 
+        /// Check the sequences order and return true if the S1 is older than S2.
         /// </summary>
-        /// <param name="pS1">Séquence 1</param>
-        /// <param name="pS2">Séquence 2</param>
-        /// <returns></returns>
+        /// <param name="pS1">Sequence 1</param>
+        /// <param name="pS2">Sequence 2</param>
+        /// <returns>Return a boolean that is equal to true if S1 is older than S2.</returns>
         public bool SequenceLessThan(uint pS1, uint pS2)
         {
             return SequenceGreatherThan(pS2, pS1);

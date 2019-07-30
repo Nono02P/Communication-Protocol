@@ -6,13 +6,13 @@ namespace CommunicationProtocol.CRC
 {
     public class Crc : HashAlgorithm
     {
-        #region Variables privées
+        #region Private Variables
         private readonly ulong _mask;
         private readonly ulong[] _table = new ulong[256];
         private ulong _currentValue;
-        #endregion
+        #endregion Private Variables
 
-        #region Propriétés
+        #region Properties
         public Parameters Parameters { get; private set; }
         public override int HashSize { get { return Parameters.HashSize; } }
         public override bool CanTransformMultipleBlocks
@@ -22,9 +22,9 @@ namespace CommunicationProtocol.CRC
                 return base.CanTransformMultipleBlocks;
             }
         }
-        #endregion
+        #endregion Properties
 
-        #region Constructeur
+        #region Constructor
         public Crc(Parameters parameters)
         {
             if (parameters == null)
@@ -36,11 +36,11 @@ namespace CommunicationProtocol.CRC
 
             Init();
         }
-        #endregion
+        #endregion Constructor
 
         public ulong[] GetTable()
         {
-            var res = new ulong[_table.Length];
+            ulong[] res = new ulong[_table.Length];
             Array.Copy(_table, res, _table.Length);
             return res;
         }
@@ -130,10 +130,10 @@ namespace CommunicationProtocol.CRC
         #region Test functions
         public static CheckResult[] CheckAll()
         {
-            var parameters = CrcStdParams.StandartParameters;
+            Dictionary<CrcAlgorithms, Parameters> parameters = CrcStdParams.StandartParameters;
 
-            var result = new List<CheckResult>();
-            foreach (var parameter in parameters)
+            List<CheckResult> result = new List<CheckResult>();
+            foreach (KeyValuePair<CrcAlgorithms, Parameters> parameter in parameters)
             {
                 Crc crc = new Crc(parameter.Value);
 
@@ -149,22 +149,14 @@ namespace CommunicationProtocol.CRC
 
         public bool IsRight(byte[] bytes)
         {
-            // Code qui permet de récupérer le Check (et vérifier que le CRC n'a pas été préparé par quelqu'un.
-
-            var hashBytes = ComputeHash(bytes);
-
-            var hash = CrcHelper.FromBigEndian(hashBytes, HashSize);
-
-            //if (hash != Parameters.Check)
-                //throw new Exception("Algo check failure!");
-
+            byte[] hashBytes = ComputeHash(bytes);
+            ulong hash = CrcHelper.FromBigEndian(hashBytes, HashSize);
             return hash == Parameters.Check;
         } 
 
         public class CheckResult
         {
             public Parameters Parameter { get; set; }
-
             public ulong[] Table { get; set; }
         }
         #endregion Test functions

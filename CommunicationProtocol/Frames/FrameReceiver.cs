@@ -39,14 +39,14 @@ namespace CommunicationProtocol.Frames
                 List<Packet> result = new List<Packet>();
                 int id = 0;
 
-                // Lis les paquets tant qu'aucune erreur ne se produit à la désérialisation 
-                // et tant qu'il reste au moins 1 octet (parce que la fin d'un paquet se termine toujours par des 0 pour combler à l'octet supérieur).
+                // Read the packets until an error occur or if the BitLenght is less than a byte.
+                // This is because when the data are sent they are always rounded at the superior byte and the end of a packet is filled with 0's.
                 while (Serializer.BitPacking.BitLength >= 8 && !Serializer.Error)
                 {
 #if TRACE_LOG
                     Log("Packet ID : ");
 #endif
-                    Serializer.Serialize(ref id, 0, dFactory.Count() - 1);                  // ID de paquet
+                    Serializer.Serialize(ref id, 0, dFactory.Count() - 1);                  // Packet ID
 
                     Packet packet = dFactory.CreateInstance<Packet>(id);
 #if TRACE_LOG
@@ -60,7 +60,7 @@ namespace CommunicationProtocol.Frames
             else
             {
 #if TRACE_LOG
-                Log("Paquet refusé !");
+                Log("Refused packet !");
 #endif
             }
             return null;

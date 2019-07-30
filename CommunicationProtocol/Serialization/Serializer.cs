@@ -1,4 +1,5 @@
-﻿using System;
+﻿using CommunicationProtocol.Factories;
+using System;
 using System.Collections.Generic;
 using System.Numerics;
 
@@ -6,6 +7,11 @@ namespace CommunicationProtocol.Serialization
 {
     public abstract class Serializer
     {
+        #region Constants
+        // 5 => Value can be 0 to 31 (Number of bits necessary to encode the index difference for objects serialization).
+        protected const int d_INDEX_DIFFERENCE_BIT_ENCODING = 5;
+        #endregion Constants  
+
         #region Private Variables
         private bool _error;
         #endregion Private Variables  
@@ -94,7 +100,7 @@ namespace CommunicationProtocol.Serialization
         }
         #endregion String
 
-        // TODO : Gérer une liste de types primitifs (int, float, string, etc).
+        // TODO : Manage a list of primitives types (int, float, string, etc).
 
         #region List of objects
         public abstract bool Serialize<T>(List<T> pObjects, int pNbMaxObjects = 255, bool pAddMissingElements = false, Action<T> pOnObjectCreation = null) where T : IBinarySerializable;

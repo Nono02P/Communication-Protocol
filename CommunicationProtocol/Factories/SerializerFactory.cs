@@ -1,8 +1,9 @@
 ﻿using CommunicationProtocol.Factories;
+using CommunicationProtocol.Serialization;
 using System;
 using System.Collections.Generic;
 
-namespace CommunicationProtocol.Serialization
+namespace CommunicationProtocol.Factories
 {
     public class SerializerFactory : Factory
     {

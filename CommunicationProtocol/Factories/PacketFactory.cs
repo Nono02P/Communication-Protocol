@@ -1,8 +1,9 @@
 ﻿using CommunicationProtocol.Factories;
+using CommunicationProtocol.Frames.Packets;
 using System;
 using System.Collections.Generic;
 
-namespace CommunicationProtocol.Frames.Packets
+namespace CommunicationProtocol.Factories
 {
     public class PacketFactory : Factory
     {
@@ -18,7 +19,6 @@ namespace CommunicationProtocol.Frames.Packets
         protected override void InitialiseListID()
         {
             dTypes = new List<Type>();
-            //dTypes.Add(typeof(FragmentedPacket));
             dTypes.Add(typeof(PacketA));
             dTypes.Add(typeof(PacketB));
         }
