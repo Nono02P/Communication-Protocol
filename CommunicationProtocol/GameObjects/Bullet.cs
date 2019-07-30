@@ -79,28 +79,14 @@ namespace CommunicationProtocol
 #if TRACE_LOG
                 LogHelper.WriteToFile("Serialize Bullet : ", this, Program.FileName);
                 LogHelper.WriteToFile("     SendPosition : ", this, Program.FileName);
-#endif
-                pSerializer.Serialize(ref _sendPosition);
-                if (_sendPosition)
-                {
-#if TRACE_LOG
                 LogHelper.WriteToFile("     Position : ", this, Program.FileName);
 #endif
-                    pSerializer.Serialize(ref position, Vector2.Zero, new Vector2(4096));
-                }
-
+                pSerializer.Serialize(ref position, Vector2.Zero, new Vector2(4096), ref _sendPosition);
 #if TRACE_LOG
                 LogHelper.WriteToFile("     SendVelocity : ", this, Program.FileName);
-#endif
-                pSerializer.Serialize(ref _sendVelocity);
-                if (_sendVelocity)
-                {
-#if TRACE_LOG
                 LogHelper.WriteToFile("     Velocity : ", this, Program.FileName);
 #endif
-                    pSerializer.Serialize(ref velocity, Vector2.Zero, new Vector2(30));
-                }
-
+                pSerializer.Serialize(ref velocity, Vector2.Zero, new Vector2(30), ref _sendVelocity);
 #if TRACE_LOG
                 LogHelper.WriteToFile("     Type : ", this, Program.FileName);
 #endif

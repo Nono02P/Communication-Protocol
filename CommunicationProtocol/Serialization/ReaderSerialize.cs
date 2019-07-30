@@ -9,7 +9,9 @@ namespace CommunicationProtocol.Serialization
         #region Constructor
         public ReaderSerialize(int pByteBufferSize = 1200) : base(pByteBufferSize) { }
         #endregion Constructor  
-        
+
+        #region Serialization Functions
+
         #region Boolean
         public override bool Serialize(ref bool pValue)
         {
@@ -24,22 +26,6 @@ namespace CommunicationProtocol.Serialization
             return Error;
         }
         #endregion Boolean  
-
-        #region Float
-        public override bool Serialize(ref float pValue, float pMin, float pMax, float pResolution = 1)
-        {
-            base.Serialize(ref pValue, pMin, pMax, pResolution);
-            if (!Error)
-            {
-                int min = (int)((decimal)pMin / (decimal)pResolution);
-                int max = (int)((decimal)pMax / (decimal)pResolution);
-                int value = 0;
-                Serialize(ref value, min, max);
-                pValue = (float)(value * (decimal)pResolution);
-            }
-            return Error;
-        }
-        #endregion Float  
 
         #region Integer
         public override bool Serialize(ref int pValue, int pMin, int pMax)
@@ -60,6 +46,22 @@ namespace CommunicationProtocol.Serialization
             return Error;
         }
         #endregion Integer  
+
+        #region Float
+        public override bool Serialize(ref float pValue, float pMin, float pMax, float pResolution = 1)
+        {
+            base.Serialize(ref pValue, pMin, pMax, pResolution);
+            if (!Error)
+            {
+                int min = (int)((decimal)pMin / (decimal)pResolution);
+                int max = (int)((decimal)pMax / (decimal)pResolution);
+                int value = 0;
+                Serialize(ref value, min, max);
+                pValue = (float)(value * (decimal)pResolution);
+            }
+            return Error;
+        }
+        #endregion Float  
         
         #region String
         public override bool Serialize(ref string pValue, int pLengthMax)
@@ -174,5 +176,7 @@ namespace CommunicationProtocol.Serialization
             return Error;
         }
         #endregion List of Serializable Objects  
+
+        #endregion Serialization Functions
     }
 }

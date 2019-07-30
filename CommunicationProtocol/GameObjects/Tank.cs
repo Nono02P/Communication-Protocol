@@ -92,42 +92,21 @@ namespace CommunicationProtocol
                 LogHelper.WriteToFile("     Bullets : ", this, Program.FileName);
 #endif
                 pSerializer.Serialize(Bullets, 255, true, delegate (Bullet b) { b.Parent = this; });
-
 #if TRACE_LOG
                 LogHelper.WriteToFile("     SendName : ", this, Program.FileName);
-#endif
-                pSerializer.Serialize(ref _sendName);
-                if (_sendName)
-                {
-#if TRACE_LOG
                     LogHelper.WriteToFile("     Name : ", this, Program.FileName);
 #endif
-                    pSerializer.Serialize(ref name, 50);
-                }
-
+                pSerializer.Serialize(ref name, 50, ref _sendName);
 #if TRACE_LOG
                 LogHelper.WriteToFile("     SendPosition : ", this, Program.FileName);
-#endif
-                pSerializer.Serialize(ref _sendPosition);
-                if (_sendPosition)
-                {
-#if TRACE_LOG
                     LogHelper.WriteToFile("     Position : ", this, Program.FileName);
 #endif
-                    pSerializer.Serialize(ref position, Vector2.Zero, new Vector2(4096));
-                }
-
+                pSerializer.Serialize(ref position, Vector2.Zero, new Vector2(4096), ref _sendPosition);
 #if TRACE_LOG
                 LogHelper.WriteToFile("     SendLife : ", this, Program.FileName);
-#endif
-                pSerializer.Serialize(ref _sendLife);
-                if (_sendLife)
-                {
-#if TRACE_LOG
                     LogHelper.WriteToFile("     Life : ", this, Program.FileName);
 #endif
-                    pSerializer.Serialize(ref life, 0, 100);
-                }
+                pSerializer.Serialize(ref life, 0, 100, ref _sendLife);
             }
 
             if (pSerializer is ReaderSerialize && !pSerializer.Error)

@@ -57,27 +57,14 @@ namespace CommunicationProtocol
                 pSerializer.Serialize(ref isActive);
 #if TRACE_LOG
                 LogHelper.WriteToFile("     SendPosition : ", this, Program.FileName);
+                LogHelper.WriteToFile("     Position : ", this, Program.FileName);
 #endif
-                pSerializer.Serialize(ref _sendPosition);
-                if (_sendPosition)
-                {
-#if TRACE_LOG
-                LogHelper.WriteToFile("     SendPosition : ", this, Program.FileName);
-#endif
-                    pSerializer.Serialize(ref position, Vector2.Zero, new Vector2(4096));
-                }
-
+                pSerializer.Serialize(ref position, Vector2.Zero, new Vector2(4096), ref _sendPosition);
 #if TRACE_LOG
                 LogHelper.WriteToFile("     SendNbOfAmmo : ", this, Program.FileName);
-#endif
-                pSerializer.Serialize(ref _sendNbOfAmmo);
-                if (_sendNbOfAmmo)
-                {
-#if TRACE_LOG
                 LogHelper.WriteToFile("     NbOfAmmo : ", this, Program.FileName);
 #endif
-                    pSerializer.Serialize(ref nbOfAmmo, 0, 100);
-                }
+                pSerializer.Serialize(ref nbOfAmmo, 0, 100, ref _sendNbOfAmmo);
 #if TRACE_LOG
                 LogHelper.WriteToFile("     AmmoType : ", this, Program.FileName);
 #endif

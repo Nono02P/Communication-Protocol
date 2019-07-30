@@ -31,12 +31,31 @@ namespace CommunicationProtocol.Serialization
         #endregion Constructor  
 
         #region Serialization Functions
+
+        #region Boolean
         public abstract bool Serialize(ref bool pValue);
+        #endregion Boolean  
+
+        #region Integer
         public abstract bool Serialize(ref int pValue, int pMin, int pMax);
-        public abstract bool Serialize(ref string pValue, int pLengthMax);
-        public abstract bool Serialize<T>(List<T> pObjects, int pNbMaxObjects = 255, bool pAddMissingElements = false, Action<T> pOnObjectCreation = null) where T : IBinarySerializable;
-        
+        public bool Serialize(ref int pValue, int pMin, int pMax, ref bool pShouldBeSerialized)
+        {
+            Serialize(ref pShouldBeSerialized);
+            if (pShouldBeSerialized)
+                Serialize(ref pValue, pMin, pMax);
+            return Error;
+        }
+        #endregion Integer  
+
         #region Float
+        public bool Serialize(ref float pValue, float pMin, float pMax, ref bool pShouldBeSerialized, float pResolution = 1)
+        {
+            Serialize(ref pShouldBeSerialized);
+            if (pShouldBeSerialized)
+                Serialize(ref pValue, pMin, pMax, pResolution);
+            return Error;
+        }
+
         public virtual bool Serialize(ref float pValue, float pMin, float pMax, float pResolution = 1)
         {
             if (!Error)
@@ -64,14 +83,46 @@ namespace CommunicationProtocol.Serialization
         }
         #endregion Float  
 
-        // TODO : Gérer une liste de types primitifs (int, float, string, etc).
-        //public abstract bool Serialize<T>(List<T> pType);
+        #region String
+        public abstract bool Serialize(ref string pValue, int pLengthMax);
+        public bool Serialize(ref string pValue, int pLengthMax, ref bool pShouldBeSerialized)
+        {
+            Serialize(ref pShouldBeSerialized);
+            if (pShouldBeSerialized)
+                Serialize(ref pValue, pLengthMax);
+            return Error;
+        }
+        #endregion String
 
-        #region Vectors / Quaternion
+        // TODO : Gérer une liste de types primitifs (int, float, string, etc).
+
+        #region List of objects
+        public abstract bool Serialize<T>(List<T> pObjects, int pNbMaxObjects = 255, bool pAddMissingElements = false, Action<T> pOnObjectCreation = null) where T : IBinarySerializable;
+        #endregion List of objects  
+
+        #region Vector2
+        public bool Serialize(ref Vector2 pValue, Vector2 pMin, Vector2 pMax, ref bool pShouldBeSerialized, float pResolution = 1)
+        {
+            Serialize(ref pShouldBeSerialized);
+            if (pShouldBeSerialized)
+                Serialize(ref pValue, pMin, pMax, pResolution);
+            return Error;
+        }
+
         public bool Serialize(ref Vector2 pValue, Vector2 pMin, Vector2 pMax, float pResolution = 1)
         {
             Serialize(ref pValue.X, pMin.X, pMax.X, pResolution);
             Serialize(ref pValue.Y, pMin.Y, pMax.Y, pResolution);
+            return Error;
+        }
+        #endregion Vector2  
+
+        #region Vector3
+        public bool Serialize(ref Vector3 pValue, Vector3 pMin, Vector3 pMax, ref bool pShouldBeSerialized, float pResolution = 1)
+        {
+            Serialize(ref pShouldBeSerialized);
+            if (pShouldBeSerialized)
+                Serialize(ref pValue, pMin, pMax, pResolution);
             return Error;
         }
 
@@ -80,6 +131,16 @@ namespace CommunicationProtocol.Serialization
             Serialize(ref pValue.X, pMin.X, pMax.X, pResolution);
             Serialize(ref pValue.Y, pMin.Y, pMax.Y, pResolution);
             Serialize(ref pValue.Z, pMin.Z, pMax.Z, pResolution);
+            return Error;
+        }
+        #endregion Vector3  
+
+        #region Vector4
+        public bool Serialize(ref Vector4 pValue, Vector4 pMin, Vector4 pMax, ref bool pShouldBeSerialized, float pResolution = 1)
+        {
+            Serialize(ref pShouldBeSerialized);
+            if (pShouldBeSerialized)
+                Serialize(ref pValue, pMin, pMax, pResolution);
             return Error;
         }
 
@@ -91,6 +152,16 @@ namespace CommunicationProtocol.Serialization
             Serialize(ref pValue.W, pMin.W, pMax.W, pResolution);
             return Error;
         }
+        #endregion Vector4  
+
+        #region Quaternion
+        public bool Serialize(ref Quaternion pValue, Quaternion pMin, Quaternion pMax, ref bool pShouldBeSerialized, float pResolution = 1)
+        {
+            Serialize(ref pShouldBeSerialized);
+            if (pShouldBeSerialized)
+                Serialize(ref pValue, pMin, pMax, pResolution);
+            return Error;
+        }
 
         public bool Serialize(ref Quaternion pValue, Quaternion pMin, Quaternion pMax, float pResolution = 1)
         {
@@ -100,7 +171,7 @@ namespace CommunicationProtocol.Serialization
             Serialize(ref pValue.W, pMin.W, pMax.W, pResolution);
             return Error;
         }
-        #endregion Vectors / Quaternion
+        #endregion Quaternion  
 
         #endregion Serialization Functions  
 
