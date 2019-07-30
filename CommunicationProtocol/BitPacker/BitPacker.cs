@@ -34,55 +34,44 @@ namespace CommunicationProtocol
             WordIndex = 0;
         }
 
-        public BitPacker(List<uint> pBuffer, int pBitLength)
+        public BitPacker(Span<uint> pBuffer, int? pBitLength = null)
         {
             _buffer = pBuffer.ToArray();
+            int bitLength = 0;
+            if (pBitLength.HasValue)
+                bitLength = pBitLength.Value;
+            else
+                bitLength = pBuffer.Length * BUFFER_BIT_SIZE;
             _temp = 0;
             _offsetBitReaded = 0;
-            BitIndex = pBitLength % BUFFER_BIT_SIZE;
-            WordIndex = pBitLength / BUFFER_BIT_SIZE;
+            BitIndex = bitLength % BUFFER_BIT_SIZE;
+            WordIndex = bitLength / BUFFER_BIT_SIZE;
         }
 
-        public BitPacker(uint[] pBuffer, int pBitLength)
+        public BitPacker(uint[] pBuffer, int? pBitLength = null)
         {
             _buffer = pBuffer;
+            int bitLength = 0;
+            if (pBitLength.HasValue)
+                bitLength = pBitLength.Value;
+            else
+                bitLength = pBuffer.Length * BUFFER_BIT_SIZE;
             _temp = 0;
             _offsetBitReaded = 0;
-            BitIndex = pBitLength % BUFFER_BIT_SIZE;
-            WordIndex = pBitLength / BUFFER_BIT_SIZE;
+            BitIndex = bitLength % BUFFER_BIT_SIZE;
+            WordIndex = bitLength / BUFFER_BIT_SIZE;
         }
         #endregion Constructor
 
         #region Fill buffer
         public static BitPacker FromArray(byte[] pBuffer, bool pPushTempInBuffer = true)
         {
-            BitPacker result = new BitPacker();
-            int nbOfBytePerBufferElement = BUFFER_BIT_SIZE / 8;
-            int length = (int)Math.Ceiling((double)pBuffer.Length / nbOfBytePerBufferElement);
-            result._buffer = new uint[length];
-            result.WordIndex = (int)Math.Floor((double)pBuffer.Length / nbOfBytePerBufferElement);
-            result.BitIndex = pBuffer.Length * 8 % BUFFER_BIT_SIZE;
-            for (int i = 0; i < length; i++)
-            {
-                bool shouldBeAdded = true;
-                uint val = 0;
-                for (int j = 0; j < nbOfBytePerBufferElement; j++)
-                {
-                    int indexBuffer = i * nbOfBytePerBufferElement + j;
-                    if (indexBuffer >= pBuffer.Length)
-                    {
-                        shouldBeAdded = false;
-                        result._temp = val;
-                        break;
-                    }
-                    byte b = pBuffer[indexBuffer];
-                    val |= (uint)b << j * 8;
-                }
-                if (shouldBeAdded)
-                    result._buffer[i] = val;
-            }
-            if (pPushTempInBuffer)
-                result.PushTempInBuffer();
+            int length = pBuffer.Length;
+            byte[] b = new byte[length + 4 - (length % 4)];
+            pBuffer.CopyTo(b, 0);
+            Span<uint> spanUint = MemoryMarshal.Cast<byte, uint>(new Span<byte>(b));
+            BitPacker result = new BitPacker(spanUint, 8 * length);
+            result._temp = spanUint[spanUint.Length - 1];
             return result;
         }
 
