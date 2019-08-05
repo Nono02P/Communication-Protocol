@@ -1,6 +1,7 @@
 ﻿using CommunicationProtocol.CRC;
 using CommunicationProtocol.Factories;
 using CommunicationProtocol.Serialization;
+using System;
 
 namespace CommunicationProtocol.Frames
 {
@@ -16,7 +17,7 @@ namespace CommunicationProtocol.Frames
      *  [Sequence (16 bits)]
      *  [Packet Type = 0 (Variable depending of number of packet types)]
      *  [Fragment ID (8 bits)]
-     *  [Fragment index (8 bits)]
+     *  [Number of Fragments (8 bits)]
      *  [Packet Type = 0 (Variable depending of number of packet types)]
      *  [Packet Data (Variable length)]
      *  [Packet End Serialization Check (32 bits)]
@@ -24,13 +25,14 @@ namespace CommunicationProtocol.Frames
 
     public abstract class Frame
     {
-        protected const int SEQUENCE_SIZE = 16;
+        public static int CRC_SIZE = 32;
+        public static int SEQUENCE_SIZE = 16;
 
         protected int dCrcValue;
         protected PacketFactory dFactory;
         protected Parameters dCrcParameters;
 
-        public ushort Sequence { get; protected set; }
+        public ushort CurrentSequence { get; protected set; }
         public Crc CrcCheck { get; protected set; }
         public Serializer Serializer { get; protected set; }
 
@@ -41,7 +43,6 @@ namespace CommunicationProtocol.Frames
             dFactory = PacketFactory.GetFactory();
         }
 
-
         /// <summary>
         /// Check the sequences order and return true if the S1 is newer than S2.
         /// </summary>
@@ -50,8 +51,9 @@ namespace CommunicationProtocol.Frames
         /// <returns>Return a boolean that is equal to true if S1 is newer than S2.</returns>
         public bool SequenceGreatherThan(uint pS1, uint pS2)
         {
-            return ((pS1 > pS2) && (pS1 - pS2 <= 32768)) ||
-               ((pS1 < pS2) && (pS2 - pS1 > 32768));
+            ulong mask = 1ul << (SEQUENCE_SIZE - 1);
+            return ((pS1 > pS2) && (pS1 - pS2 <= mask)) ||
+               ((pS1 < pS2) && (pS2 - pS1 > mask));
         }
 
         /// <summary>
@@ -63,6 +65,18 @@ namespace CommunicationProtocol.Frames
         public bool SequenceLessThan(uint pS1, uint pS2)
         {
             return SequenceGreatherThan(pS2, pS1);
+        }
+
+        public int SequenceDifference (uint pS1, uint pS2)
+        {
+            if (Math.Abs(pS1 - pS2) >= (long)(1ul << (SEQUENCE_SIZE - 1)))
+            {
+                if (pS1 > pS2)
+                    pS2 += (uint)1ul << SEQUENCE_SIZE;
+                else
+                    pS1 += (uint)1ul << SEQUENCE_SIZE;
+            }
+            return (int)(pS1 - pS2);
         }
     }
 }

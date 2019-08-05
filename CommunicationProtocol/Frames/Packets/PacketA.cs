@@ -1,6 +1,5 @@
 ﻿using CommunicationProtocol.ExtensionMethods;
 using CommunicationProtocol.Serialization;
-using System;
 using System.Numerics;
 
 namespace CommunicationProtocol.Frames.Packets
@@ -37,7 +36,7 @@ namespace CommunicationProtocol.Frames.Packets
             f = Program.Rnd.Next(100);
         }
 
-        public override bool Serialize(Serializer pSerializer)
+        protected override void SerializeData(Serializer pSerializer)
         {
 #if TRACE_LOG
             LogHelper.WriteToFile("Serialize PacketA : ", this, Program.FileName);
@@ -52,12 +51,9 @@ namespace CommunicationProtocol.Frames.Packets
             LogHelper.WriteToFile("     Comment : ", this, Program.FileName);
 #endif
             pSerializer.Serialize(ref comment, 16);
-
-            bool b = base.Serialize(pSerializer);
 #if TRACE_LOG
             LogHelper.WriteToFile("End of PacketA : ", this, Program.FileName);
 #endif
-            return b;
         }
     }
 }

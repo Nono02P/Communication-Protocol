@@ -31,11 +31,11 @@ namespace CommunicationProtocol.Frames
             byte[] dataCrcCalculation = Serializer.BitPacking.GetByteBuffer();
             if (CrcCheck.IsRight(dataCrcCalculation))
             {
-                Sequence = (ushort)Serializer.BitPacking.ReadValue(SEQUENCE_SIZE);          // Sequence
+                CurrentSequence = (ushort)Serializer.BitPacking.ReadValue(SEQUENCE_SIZE);          // Sequence
 #if TRACE_LOG
                 Log("Read Sequence : " + Sequence + " (" + SEQUENCE_SIZE + "Bits)");
 #endif
-                Debug.Assert(!Program.StopOnSequence.HasValue || Sequence != Program.StopOnSequence.Value);
+                Debug.Assert(!Program.StopOnSequence.HasValue || CurrentSequence != Program.StopOnSequence.Value);
                 List<Packet> result = new List<Packet>();
                 int id = 0;
 

@@ -24,26 +24,24 @@ namespace CommunicationProtocol.Frames
         }
 #endif
 
-        private void PrepareFrame()
+        private PacketHeader PrepareFrame()
         {
             _shouldClean = false;
             Serializer.BitPacking.Clear();
-            Serializer.BitPacking.WriteValue(0, CrcCheck.HashSize);         // Write an empty CRC
-#if TRACE_LOG
-            Log("Reserve Empty CRC : " + 0 + " (" + CrcCheck.HashSize + "Bits)");
-#endif
-            Serializer.BitPacking.WriteValue(Sequence, SEQUENCE_SIZE);      // Write the Sequence index
-#if TRACE_LOG
-            Log("Sequence : " + Sequence + " (" + SEQUENCE_SIZE + "Bits)");
-#endif
+            PacketHeader header = new PacketHeader();
+            header.Sequence = CurrentSequence;
+            header.BeginSerialize(Serializer);
+            return header;
         }
 
         public bool InsertPacket(Packet pPacket)
         {
             if (_shouldClean)
-                PrepareFrame();
+                pPacket.Header = PrepareFrame();
+            else
+                pPacket.Header = new PacketHeader() { Sequence = CurrentSequence };
 
-            Debug.Assert(!Program.StopOnSequence.HasValue || Sequence != Program.StopOnSequence.Value);
+            Debug.Assert(!Program.StopOnSequence.HasValue || CurrentSequence != Program.StopOnSequence.Value);
             int bitCounter = Serializer.BitPacking.BitLength;
             int id = dFactory.GetID(pPacket);
 #if TRACE_LOG
@@ -73,10 +71,18 @@ namespace CommunicationProtocol.Frames
             }
 
             if (Serializer.BitPacking.ByteLength > MTU)
-            {
-                throw new Exception("Call the fragmentation code here.");
-            }
+                SplitPacketIntoFragments();
+            
             return !Serializer.Error;
+        }
+
+        private void SplitPacketIntoFragments()
+        {
+            int nbOfFragments = (int)Math.Ceiling(Serializer.BitPacking.ByteLength / (decimal)MTU);
+            for (int i = 0; i < nbOfFragments; i++)
+            {
+
+            }
         }
 
         public byte[] Send()
@@ -92,7 +98,7 @@ namespace CommunicationProtocol.Frames
             Serializer.BitPacking.OverrideValue((uint)dCrcValue, CrcCheck.HashSize);            // Write the CRC at the frame start (reserved area)
             data = Serializer.BitPacking.GetByteBuffer();
             
-            Sequence++;
+            CurrentSequence++;
             _shouldClean = true;
             return data;
         }

@@ -46,7 +46,7 @@ namespace CommunicationProtocol.Frames.Packets
             }
         }
 
-        public override bool Serialize(Serializer pSerializer)
+        protected override void SerializeData(Serializer pSerializer)
         {            
             if (Actors == null)
                 Actors = new List<IActor>();
@@ -55,12 +55,9 @@ namespace CommunicationProtocol.Frames.Packets
             LogHelper.WriteToFile("Serialize PacketB : ", this, Program.FileName);
 #endif
             pSerializer.Serialize(Actors, 255, true);
-
-            bool b = base.Serialize(pSerializer);
 #if TRACE_LOG
             LogHelper.WriteToFile("End of PacketB : ", this, Program.FileName);
 #endif
-            return b;
         }
     }
 }

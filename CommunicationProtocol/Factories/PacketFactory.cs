@@ -1,5 +1,4 @@
-﻿using CommunicationProtocol.Factories;
-using CommunicationProtocol.Frames.Packets;
+﻿using CommunicationProtocol.Frames.Packets;
 using System;
 using System.Collections.Generic;
 
@@ -19,16 +18,17 @@ namespace CommunicationProtocol.Factories
         protected override void InitialiseListID()
         {
             dTypes = new List<Type>();
+            dTypes.Add(typeof(FragmentedPacket));
             dTypes.Add(typeof(PacketA));
             dTypes.Add(typeof(PacketB));
         }
 
-        public new T CreateInstance<T>(int pID) where T : Packet
+        public new T CreateInstance<T>(int pID) where T : IPacket
         {
             return base.CreateInstance<T>(pID);
         }
 
-        public new int GetID<T>(T pType) where T : Packet
+        public new int GetID<T>(T pType) where T : IPacket
         {
             return base.GetID(pType);
         }

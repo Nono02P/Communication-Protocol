@@ -1,28 +1,23 @@
-﻿using CommunicationProtocol.Serialization;
+﻿using CommunicationProtocol.Factories;
+using CommunicationProtocol.Serialization;
 
 namespace CommunicationProtocol.Frames.Packets
 {
-    public class FragmentedPacket : Packet
+    public class FragmentedPacket : IPacket
     {
-        private int _fragmentID;
-        private int _numberOfFragments;
+        public int FragmentID;
+        public int NumberOfFragments;
+        public int PacketID;
 
-        public override bool Equals(Packet other)
+        public PacketHeader Header { get; set; }
+
+        public bool Serialize(Serializer pSerializer)
         {
-            throw new System.NotImplementedException();
-        }
+            pSerializer.Serialize(ref FragmentID, 0, 255);
+            pSerializer.Serialize(ref NumberOfFragments, 0, 255);
+            pSerializer.Serialize(ref PacketID, 0, PacketFactory.GetFactory().Count() - 1);
 
-        public override void Random()
-        {
-            throw new System.NotImplementedException();
-        }
-
-        public override bool Serialize(Serializer pSerializer)
-        {
-            pSerializer.Serialize(ref _fragmentID, 0, 255);
-            pSerializer.Serialize(ref _numberOfFragments, 0, 255);
-
-            return base.Serialize(pSerializer);
+            return !pSerializer.Error;
         }
     }
 }
