@@ -1,6 +1,7 @@
 ﻿using CommunicationProtocol.Factories;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Numerics;
 
 namespace CommunicationProtocol.Serialization
@@ -42,8 +43,13 @@ namespace CommunicationProtocol.Serialization
         public abstract bool Serialize(ref bool pValue);
         #endregion Boolean  
 
+        #region Byte Array
+        public abstract bool Serialize(ref byte[] pData, int pLength);
+        #endregion Byte Array  
+
         #region Integer
         public abstract bool Serialize(ref int pValue, int pMin, int pMax);
+        public abstract bool Serialize(ref int pValue, int pNbOfBits);
         public bool Serialize(ref int pValue, int pMin, int pMax, ref bool pShouldBeSerialized)
         {
             Serialize(ref pShouldBeSerialized);

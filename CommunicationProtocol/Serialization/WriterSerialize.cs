@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Runtime.InteropServices;
 using System.Text;
 
 namespace CommunicationProtocol.Serialization
@@ -7,7 +8,7 @@ namespace CommunicationProtocol.Serialization
     public class WriterSerialize : Serializer
     {
         #region Constructor
-        public WriterSerialize(int pByteBufferSize = 1200) : base(pByteBufferSize) { }
+        public WriterSerialize(int pByteBufferSize = 1200 * 255) : base(pByteBufferSize) { }
         #endregion Constructor  
 
         #region Serialization Functions
@@ -29,6 +30,14 @@ namespace CommunicationProtocol.Serialization
         }
         #endregion Boolean  
 
+        #region Byte Array
+        public override bool Serialize(ref byte[] pData, int pLength)
+        {
+            BitPacking.InsertBytes(pData, pLength);
+            return true;
+        }
+        #endregion Byte Array  
+
         #region Integer
         public override bool Serialize(ref int pValue, int pMin, int pMax)
         {
@@ -43,6 +52,18 @@ namespace CommunicationProtocol.Serialization
                 LogHelper.WriteToFile("Write integer : " + mappedValue + " (" + requiredBits + "Bits)", this, Program.FileName);
 #endif
                 BitPacking.WriteValue(mappedValue, requiredBits);
+            }
+            return Error;
+        }
+
+        public override bool Serialize(ref int pValue, int pNbOfBits)
+        {
+            if (!Error)
+            {
+#if TRACE_LOG
+                LogHelper.WriteToFile("Write integer : " + pValue + " (" + pNbOfBits + "Bits)", this, Program.FileName);
+#endif
+                BitPacking.WriteValue((uint)pValue, pNbOfBits);
             }
             return Error;
         }
@@ -173,7 +194,6 @@ namespace CommunicationProtocol.Serialization
             }
             return Error;
         }
-
         #endregion List of Serializable Objects  
 
         #endregion Serialization Functions

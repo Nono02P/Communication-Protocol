@@ -27,6 +27,14 @@ namespace CommunicationProtocol.Serialization
         }
         #endregion Boolean  
 
+        #region Byte Array
+        public override bool Serialize(ref byte[] pData, int pLength)
+        {
+            BitPacking.ReadBytes(pLength).CopyTo(pData, 0);
+            return pData != null;
+        }
+        #endregion Byte Array  
+
         #region Integer
         public override bool Serialize(ref int pValue, int pMin, int pMax)
         {
@@ -42,6 +50,18 @@ namespace CommunicationProtocol.Serialization
                     pValue = value;
                 else
                     Error = true;
+            }
+            return Error;
+        }
+
+        public override bool Serialize(ref int pValue, int pNbOfBits)
+        {
+            if (!Error)
+            {
+                pValue = (int)BitPacking.ReadValue(pNbOfBits);
+#if TRACE_LOG
+                LogHelper.WriteToFile("Read integer : " + pValue + " (" + pNbOfBits + "Bits)", this, Program.FileName);
+#endif
             }
             return Error;
         }
