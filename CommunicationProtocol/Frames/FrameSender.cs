@@ -13,8 +13,8 @@ namespace CommunicationProtocol.Frames
 
         public FrameSender() : base()
         {
-            Serializer = new WriterSerialize();
-            PrepareFrame();
+            FrameSerializer = new WriterSerialize();
+            //PrepareFrame();
         }
 
 #if TRACE_LOG
@@ -24,34 +24,32 @@ namespace CommunicationProtocol.Frames
         }
 #endif
 
-        private PacketHeader PrepareFrame()
+        private PacketHeader PrepareFrame(bool pClearBitPacker = false)
         {
             _shouldClean = false;
-            Serializer.BitPacking.Clear();
-            PacketHeader header = new PacketHeader();
-            header.Sequence = CurrentSequence;
-            header.BeginSerialize(Serializer);
+            if (pClearBitPacker)
+                FrameSerializer.BitPacking.Clear();
+
+            PacketHeader header = new PacketHeader(0, CurrentSequence);             // Write an empty CRC to reserve the 32 first bits to the CRC.
+            header.BeginSerialize(FrameSerializer);
             return header;
         }
 
-        public bool InsertPacket(Packet pPacket)
+        public bool ProcessPacket(Packet pPacket)
         {
-            if (_shouldClean)
-                pPacket.Header = PrepareFrame();
-            else
-                pPacket.Header = new PacketHeader() { Sequence = CurrentSequence };
-
+            pPacket.Header = PrepareFrame(_shouldClean);                                            // CRC + Sequence
+         
             Debug.Assert(!Program.StopOnSequence.HasValue || CurrentSequence != Program.StopOnSequence.Value);
-            int bitCounter = Serializer.BitPacking.BitLength;
+            int bitCounter = FrameSerializer.BitPacking.BitLength;
             int id = dFactory.GetID(pPacket);
 #if TRACE_LOG
             Log("Packet ID : ");
 #endif
-            Serializer.Serialize(ref id, 0, dFactory.Count() - 1);                              // Packet ID
+            FrameSerializer.Serialize(ref id, 0, dFactory.Count() - 1);                              // Packet ID
 #if TRACE_LOG
             Log("Packet Data : ");
 #endif
-            if (!pPacket.Serialize(Serializer))                                                 // Data
+            if (!pPacket.Serialize(FrameSerializer))                                                 // Data
             {
 #if DEBUG
                 if (pPacket is PacketB)
@@ -62,45 +60,81 @@ namespace CommunicationProtocol.Frames
                     if (p.Actors.Count == 0)
 #endif
                     {
-                        int dif = Serializer.BitPacking.BitLength - bitCounter;
-                        Serializer.BitPacking.RemoveFromEnd(dif);
-                        Serializer.Error = false;
+                        FrameSerializer.BitPacking.Clear();
+                        FrameSerializer.Error = false;
                         return false;
                     }
                 }
             }
 
-            if (Serializer.BitPacking.ByteLength > MTU)
+            if (FrameSerializer.BitPacking.ByteLength > MTU)
                 SplitPacketIntoFragments();
+
+            AddCrcOnHeader(pPacket.Header);
             
-            return !Serializer.Error;
+            CurrentSequence++;
+            _shouldClean = true;
+            return !FrameSerializer.Error;
         }
 
-        private void SplitPacketIntoFragments()
+        private FragmentedPacket[] SplitPacketIntoFragments()
         {
-            int nbOfFragments = (int)Math.Ceiling(Serializer.BitPacking.ByteLength / (decimal)MTU);
+            int nbOfFragments = (int)Math.Ceiling(FrameSerializer.BitPacking.ByteLength / (decimal)MTU);
+            int normalHeaderSize = (CRC_SIZE + SEQUENCE_SIZE) / 8;
+            Span<byte> data = FrameSerializer.BitPacking.GetByteSpanBuffer();
+            Span<byte> dataWithoutHeader = data.Slice(normalHeaderSize);
+            FragmentedPacket[] packets = new FragmentedPacket[nbOfFragments];
             for (int i = 0; i < nbOfFragments; i++)
             {
+                FrameSerializer.BitPacking = new BitPacker();
+                packets[i] = new FragmentedPacket();
+                packets[i].Header = new PacketHeader(0, CurrentSequence);
+                packets[i].Header.BeginSerialize(FrameSerializer);                      // CRC + Sequence
+                int id = dFactory.GetID<IPacket>(packets[i]);
+                FrameSerializer.Serialize(ref id, 0, dFactory.Count() - 1);             // Packet ID
+                packets[i].FragmentID = i;
+                packets[i].NumberOfFragments = nbOfFragments;
 
+                int fragmentedHeaderSize = FrameSerializer.BitPacking.ByteLength;
+                int dataSize = MTU - fragmentedHeaderSize;
+                int length = dataSize;
+                if (i == nbOfFragments - 1)
+                    length = dataWithoutHeader.Length % MTU;
+
+                packets[i].Data = dataWithoutHeader.Slice(dataSize * i, length).ToArray();
+                packets[i].Serialize(FrameSerializer);
+                AddCrcOnHeader(packets[i].Header);
             }
+            return packets;
+        }
+
+        private void AddCrcOnHeader(PacketHeader pHeader)
+        {
+            FrameSerializer.BitPacking.PushTempInBuffer();
+
+            byte[] data = FrameSerializer.BitPacking.GetByteBuffer();
+            int crcByteLength = CrcCheck.HashSize / 8;
+
+            CrcCheck.ComputeHash(data, crcByteLength, data.Length - crcByteLength);
+            pHeader.Crc = (uint)CrcHelper.FromBigEndian(CrcCheck.Hash, CrcCheck.HashSize);
+            pHeader.EndSerialize(FrameSerializer);
         }
 
         public byte[] Send()
         {
-            Serializer.BitPacking.PushTempInBuffer();
+            /*
+            FrameSerializer.BitPacking.PushTempInBuffer();
 
-            byte[] data = Serializer.BitPacking.GetByteBuffer();
+            byte[] data = FrameSerializer.BitPacking.GetByteBuffer();
             int crcByteLength = CrcCheck.HashSize / 8;
 
             CrcCheck.ComputeHash(data, crcByteLength, data.Length - crcByteLength);
             dCrcValue = (int)CrcHelper.FromBigEndian(CrcCheck.Hash, CrcCheck.HashSize);
             
-            Serializer.BitPacking.OverrideValue((uint)dCrcValue, CrcCheck.HashSize);            // Write the CRC at the frame start (reserved area)
-            data = Serializer.BitPacking.GetByteBuffer();
-            
-            CurrentSequence++;
-            _shouldClean = true;
-            return data;
+            FrameSerializer.BitPacking.OverrideValue((uint)dCrcValue, CrcCheck.HashSize);            // Write the CRC at the frame start (reserved area)
+            */
+
+            return FrameSerializer.BitPacking.GetByteBuffer();
         }
     }
 }

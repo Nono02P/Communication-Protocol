@@ -1,4 +1,5 @@
 ﻿using CommunicationProtocol.CRC;
+using CommunicationProtocol.Factories;
 using CommunicationProtocol.Frames;
 using CommunicationProtocol.Frames.Packets;
 using CommunicationProtocol.Serialization;
@@ -15,7 +16,7 @@ namespace CommunicationProtocol
         public static string FileName;
         public static Random Rnd = new Random(1);
         public static int? StopOnSequence = null;
-
+        
         static void Main(string[] args)
         {
             TestFrames();
@@ -23,8 +24,27 @@ namespace CommunicationProtocol
             //TestSerializerPacketB();
             //TestBitPacker();
             //TestCRC();
-            
+            //Devlog();
             Console.Read();
+        }
+
+        private static void Devlog()
+        {
+            BitPacker bitPacker = new BitPacker();
+            bitPacker.WriteValue(80, 7);
+            bitPacker.WriteValue(3850, 12);
+            bitPacker.WriteValue(750, 10);
+
+            bitPacker.PushTempInBuffer();
+            Console.WriteLine(bitPacker.ToString());
+
+            byte[] data = bitPacker.GetByteBuffer();
+
+            Console.WriteLine("Reader Creation : ");
+            BitPacker reader = BitPacker.FromArray(data);
+            Console.WriteLine(reader.ReadValue(7));
+            Console.WriteLine(reader.ReadValue(12));
+            Console.WriteLine(reader.ReadValue(10));
         }
 
         #region Frames
@@ -45,37 +65,28 @@ namespace CommunicationProtocol
                 LogHelper.WriteToFile("Prepare to sending packet.", "Program", FileName, true);
 #endif
                 List<Packet> sendPackets = new List<Packet>();
-                for (int i = 0; i < 1; i++)
+                while (sendPackets.Count == 0) //for (int i = 0; i < 1; i++)
                 {
                     //Packet p = GetPacketB(); 
                     Packet p = RandomPacket();
-                    if (sender.InsertPacket(p))
+                    if (sender.ProcessPacket(p))
                         sendPackets.Add(p);
                 }
 
                 byte[] data = sender.Send();
-                /*
-                string message = string.Empty;
-                for (int i = data.Length - 1; i >= 0; i--)
-                {
-                    message += data[i] + " ";
-                }
-                Console.WriteLine(message);
-                */
 
                 FileName = "Receiver";
                 FrameReceiver receiver = new FrameReceiver();
 #if TRACE_LOG
                 LogHelper.WriteToFile("Prepare to receive packet.", "Program", FileName, true);
 #endif
-                List<Packet> readPackets = receiver.Receive(data);
+                List<IPacket> readPackets = receiver.Receive(data);
                 Debug.Assert(sendPackets.Count == readPackets.Count);
                 for (int i = 0; i < sendPackets.Count; i++)
                 {
-                    Packet itemA = sendPackets[i];
-                    Packet itemB = readPackets[i];
+                    IPacket itemA = sendPackets[i];
+                    IPacket itemB = readPackets[i];
                     Debug.Assert(itemA.Equals(itemB));
-                    itemA.Equals(itemB);
                 }
                 Console.WriteLine(counter);
                 counter++;
@@ -87,7 +98,7 @@ namespace CommunicationProtocol
         private static Packet RandomPacket()
         {
             PacketFactory factory = PacketFactory.GetFactory();
-            int id = Rnd.Next(factory.Count());
+            int id = 1 + Rnd.Next(factory.Count() - 1);         // Exclusion of the fragmented packet (ID 0)
             Packet p = factory.CreateInstance<Packet>(id);
             p.Random();
             return p;
@@ -195,7 +206,7 @@ namespace CommunicationProtocol
             crcSender.ComputeHash(bufferSender.GetByteBuffer());
             uint value = (uint)CrcHelper.FromBigEndian(crcSender.Hash, crcSender.HashSize);
 
-            bufferSender.AlignToNextByte();
+            bufferSender.AlignToNextWriteByte();
             bufferSender.WriteValue(value, 32);
 
             /*
@@ -228,7 +239,7 @@ namespace CommunicationProtocol
             if (crcReceiver.IsRight(bufferReceiver.GetByteBuffer()))
                 Console.WriteLine("Paquet accepté !");
             else
-                Console.WriteLine("Paquet refusé !");
+                Console.WriteLine("Refused packet !");
         }
         #endregion CRC  
     }

@@ -9,7 +9,7 @@ namespace CommunicationProtocol.Frames
     {
         public FrameReceiver() : base()
         {
-            Serializer = new ReaderSerialize();
+            FrameSerializer = new ReaderSerialize();
         }
 
 #if TRACE_LOG
@@ -19,40 +19,41 @@ namespace CommunicationProtocol.Frames
         }
 #endif
 
-        public List<Packet> Receive(byte[] pData)
+        public List<IPacket> Receive(byte[] pData)
         {
-            Serializer.BitPacking = BitPacker.FromArray(pData);
-            uint crcValue = Serializer.BitPacking.ReadValue(CrcCheck.HashSize);             // CRC
+            FrameSerializer.BitPacking = BitPacker.FromArray(pData);
+            uint crcValue = FrameSerializer.BitPacking.ReadValue(CrcCheck.HashSize);             // CRC
 #if TRACE_LOG
             Log("Read CRC : " + crcValue + " (" + CrcCheck.HashSize + "Bits)");
 #endif
             dCrcParameters.Check = crcValue;
 
-            byte[] dataCrcCalculation = Serializer.BitPacking.GetByteBuffer();
+            byte[] dataCrcCalculation = FrameSerializer.BitPacking.GetByteBuffer();
             if (CrcCheck.IsRight(dataCrcCalculation))
             {
-                CurrentSequence = (ushort)Serializer.BitPacking.ReadValue(SEQUENCE_SIZE);          // Sequence
+                CurrentSequence = (ushort)FrameSerializer.BitPacking.ReadValue(SEQUENCE_SIZE);          // Sequence
 #if TRACE_LOG
                 Log("Read Sequence : " + Sequence + " (" + SEQUENCE_SIZE + "Bits)");
 #endif
                 Debug.Assert(!Program.StopOnSequence.HasValue || CurrentSequence != Program.StopOnSequence.Value);
-                List<Packet> result = new List<Packet>();
+                List<IPacket> result = new List<IPacket>();
                 int id = 0;
 
                 // Read the packets until an error occur or if the BitLenght is less than a byte.
                 // This is because when the data are sent they are always rounded at the superior byte and the end of a packet is filled with 0's.
-                while (Serializer.BitPacking.BitLength >= 8 && !Serializer.Error)
+                while (FrameSerializer.BitPacking.BitLength >= 8 && !FrameSerializer.Error)
                 {
 #if TRACE_LOG
                     Log("Packet ID : ");
 #endif
-                    Serializer.Serialize(ref id, 0, dFactory.Count() - 1);                  // Packet ID
+                    FrameSerializer.Serialize(ref id, 0, dFactory.Count() - 1);                  // Packet ID
 
-                    Packet packet = dFactory.CreateInstance<Packet>(id);
+                    IPacket packet = dFactory.CreateInstance<IPacket>(id);
+                    packet.Header = new PacketHeader(crcValue, CurrentSequence);
 #if TRACE_LOG
                     Log("Packet Data : ");
 #endif
-                    if (packet.Serialize(Serializer))                                       // Data
+                    if (packet.Serialize(FrameSerializer))                                       // Data
                         result.Add(packet);
                 }
                 return result;

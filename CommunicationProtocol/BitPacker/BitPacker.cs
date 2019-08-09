@@ -118,7 +118,6 @@ namespace CommunicationProtocol
             AlignToNextWriteByte();
             Span<byte> spanByte = new Span<byte>(pData, 0, pLength);
             Span<uint> spanUint = MemoryMarshal.Cast<byte, uint>(spanByte);
-            Debug.Assert(false);
             Span<uint> bufferUint = new Span<uint>(_buffer, WordIndex, spanUint.Length);
             Span<byte> bufferByte = MemoryMarshal.Cast<uint, byte>(bufferUint).Slice(BitIndex / 8);
             spanByte.CopyTo(bufferByte);

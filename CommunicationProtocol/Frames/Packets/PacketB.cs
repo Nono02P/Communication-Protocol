@@ -7,9 +7,11 @@ namespace CommunicationProtocol.Frames.Packets
 {
     public class PacketB : Packet
     {
+        private const int NB_MAX_OF_ACTORS = 1000;
+
         public List<IActor> Actors;
 
-        public override bool Equals(Packet other)
+        public override bool Equals(IPacket other)
         {
             if (other is PacketB)
             {
@@ -35,7 +37,7 @@ namespace CommunicationProtocol.Frames.Packets
             Actors = new List<IActor>();
             SerializerFactory factory = SerializerFactory.GetFactory();
             Random rnd = Program.Rnd;
-            int nb = rnd.Next(25);
+            int nb = rnd.Next(NB_MAX_OF_ACTORS);
             for (int i = 0; i < nb; i++)
             {
                 int id = rnd.Next(factory.Count());
@@ -54,7 +56,7 @@ namespace CommunicationProtocol.Frames.Packets
 #if TRACE_LOG
             LogHelper.WriteToFile("Serialize PacketB : ", this, Program.FileName);
 #endif
-            pSerializer.Serialize(Actors, 255, true);
+            pSerializer.Serialize(Actors, NB_MAX_OF_ACTORS, true);
 #if TRACE_LOG
             LogHelper.WriteToFile("End of PacketB : ", this, Program.FileName);
 #endif

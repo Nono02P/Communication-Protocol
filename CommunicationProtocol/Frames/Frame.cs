@@ -28,13 +28,13 @@ namespace CommunicationProtocol.Frames
         public static int CRC_SIZE = 32;
         public static int SEQUENCE_SIZE = 16;
 
-        protected int dCrcValue;
+        //protected int dCrcValue;
         protected PacketFactory dFactory;
         protected Parameters dCrcParameters;
 
         public ushort CurrentSequence { get; protected set; }
         public Crc CrcCheck { get; protected set; }
-        public Serializer Serializer { get; protected set; }
+        public Serializer FrameSerializer { get; protected set; }
 
         public Frame()
         {

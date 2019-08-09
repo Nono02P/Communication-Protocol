@@ -13,7 +13,7 @@ namespace CommunicationProtocol.Frames.Packets
         public float f;
         public string comment;
         
-        public override bool Equals(Packet other)
+        public override bool Equals(IPacket other)
         {
             if (other is PacketA)
             {
