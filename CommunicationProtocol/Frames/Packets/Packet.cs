@@ -8,6 +8,8 @@ namespace CommunicationProtocol.Frames.Packets
         private const int SERIALIZATION_CHECK_VALUE = 1431655766;
         private const int SERIALIZATION_CHECK_SIZE = 32;
 
+        protected abstract bool dUseSerializationCheck { get; }
+
         public PacketHeader Header { get; set; }
 
         public abstract bool Equals(IPacket other);
@@ -30,13 +32,18 @@ namespace CommunicationProtocol.Frames.Packets
 
         private bool EndSerialize(Serializer pSerializer)
         {
-            int checkValue = SERIALIZATION_CHECK_VALUE;
+            bool result = !dUseSerializationCheck;
+            if (dUseSerializationCheck)
+            {
+                int checkValue = SERIALIZATION_CHECK_VALUE;
 #if TRACE_LOG
             LogHelper.WriteToFile("End Serialization Check :", this, Program.FileName);
 #endif
-            pSerializer.Serialize(ref checkValue, SERIALIZATION_CHECK_SIZE);
-            Debug.Assert(checkValue == SERIALIZATION_CHECK_VALUE);
-            return !pSerializer.Error && checkValue == SERIALIZATION_CHECK_VALUE;
+                pSerializer.Serialize(ref checkValue, SERIALIZATION_CHECK_SIZE);
+                Debug.Assert(checkValue == SERIALIZATION_CHECK_VALUE);
+                result = checkValue == SERIALIZATION_CHECK_VALUE;
+            }
+            return !pSerializer.Error && result;
         }
     }
 }

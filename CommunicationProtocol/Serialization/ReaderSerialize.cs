@@ -7,7 +7,7 @@ namespace CommunicationProtocol.Serialization
     public class ReaderSerialize : Serializer
     {
         #region Constructor
-        public ReaderSerialize(int pByteBufferSize = 1200) : base(pByteBufferSize) { }
+        public ReaderSerialize(int pByteBufferSize = 1024 * 255) : base(pByteBufferSize) { }
         #endregion Constructor  
 
         #region Serialization Functions

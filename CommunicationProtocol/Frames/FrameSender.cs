@@ -8,7 +8,10 @@ namespace CommunicationProtocol.Frames
 {
     public class FrameSender : Frame
     {
-        private const int MTU = 1200;
+        /// <summary>
+        /// Maximum Transmission Unit in bytes.
+        /// </summary>
+        private const int MTU = 1024;
         private bool _shouldClean;
 
         public FrameSender() : base()
@@ -79,8 +82,12 @@ namespace CommunicationProtocol.Frames
 
         private FragmentedPacket[] SplitPacketIntoFragments()
         {
-            int nbOfFragments = (int)Math.Ceiling(FrameSerializer.BitPacking.ByteLength / (decimal)MTU);
             int normalHeaderSize = (CRC_SIZE + SEQUENCE_SIZE) / 8;
+            int fragmentedHeaderSize = normalHeaderSize +                                           // CRC + Sequence
+                (int)Math.Ceiling((decimal)(FrameSerializer.BitsRequired(0, dFactory.Count() - 1) + // Number of bits required to send the packet type.
+                FragmentedPacket.FRAGMENT_HEADER_SIZE) / 8);                                        // Fragment ID + Number of fragments
+            int dataSize = MTU - fragmentedHeaderSize;
+            int nbOfFragments = (int)Math.Ceiling((FrameSerializer.BitPacking.ByteLength - normalHeaderSize) / (decimal)(MTU - fragmentedHeaderSize));
             Span<byte> data = FrameSerializer.BitPacking.GetByteSpanBuffer();
             Span<byte> dataWithoutHeader = data.Slice(normalHeaderSize);
             FragmentedPacket[] packets = new FragmentedPacket[nbOfFragments];
@@ -95,11 +102,9 @@ namespace CommunicationProtocol.Frames
                 packets[i].FragmentID = i;
                 packets[i].NumberOfFragments = nbOfFragments;
 
-                int fragmentedHeaderSize = (int)Math.Ceiling((decimal)(FrameSerializer.BitPacking.BitLength + FragmentedPacket.FRAGMENT_HEADER_SIZE) / 8);
-                int dataSize = MTU - fragmentedHeaderSize;
                 int length = dataSize;
                 if (i == nbOfFragments - 1)
-                    length = dataWithoutHeader.Length % MTU;
+                    length = dataWithoutHeader.Length % (MTU - fragmentedHeaderSize);
 
                 packets[i].Data = dataWithoutHeader.Slice(dataSize * i, length).ToArray();
                 packets[i].Serialize(FrameSerializer);                                  // Data

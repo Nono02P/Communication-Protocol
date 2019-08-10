@@ -8,7 +8,7 @@ namespace CommunicationProtocol.Serialization
     public class WriterSerialize : Serializer
     {
         #region Constructor
-        public WriterSerialize(int pByteBufferSize = 1200 * 255) : base(pByteBufferSize) { }
+        public WriterSerialize(int pByteBufferSize = 1024 * 255) : base(pByteBufferSize) { }
         #endregion Constructor  
 
         #region Serialization Functions

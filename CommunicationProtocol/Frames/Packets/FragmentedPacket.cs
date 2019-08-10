@@ -2,7 +2,7 @@
 
 namespace CommunicationProtocol.Frames.Packets
 {
-    public class FragmentedPacket : IPacket
+    public sealed class FragmentedPacket : IPacket
     {
         public const int FRAGMENT_HEADER_SIZE = 2 * 8;      // 8 bits for ID of fragmented packet + 8 bits for number of fragmented packets
 

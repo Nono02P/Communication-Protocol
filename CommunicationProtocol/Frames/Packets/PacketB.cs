@@ -11,6 +11,8 @@ namespace CommunicationProtocol.Frames.Packets
 
         public List<IActor> Actors;
 
+        protected override bool dUseSerializationCheck => true;
+
         public override bool Equals(IPacket other)
         {
             if (other is PacketB)

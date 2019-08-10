@@ -9,6 +9,8 @@ namespace CommunicationProtocol.Frames.Packets
         private const float _POSITION_RESOLUTION = 0.01f;
         private const float _F_RESOLUTION = 0.01f;
 
+        protected override bool dUseSerializationCheck => true;
+
         public Vector3 Position;
         public float f;
         public string comment;
