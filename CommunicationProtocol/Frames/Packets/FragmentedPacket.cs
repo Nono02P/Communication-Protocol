@@ -4,7 +4,7 @@ namespace CommunicationProtocol.Frames.Packets
 {
     public class FragmentedPacket : IPacket
     {
-        public const int FRAGMENT_HEADER_SIZE = 2 * 8;      // 8 bits for index of fragmented packet + 8 bits for number of fragmented packets
+        public const int FRAGMENT_HEADER_SIZE = 2 * 8;      // 8 bits for ID of fragmented packet + 8 bits for number of fragmented packets
 
         public int FragmentID;
         public int NumberOfFragments;
@@ -42,9 +42,8 @@ namespace CommunicationProtocol.Frames.Packets
             pSerializer.Serialize(ref FragmentID, FRAGMENT_HEADER_SIZE / 2);
             pSerializer.Serialize(ref NumberOfFragments, FRAGMENT_HEADER_SIZE / 2);
             if (Data == null)
-            {
                 Data = new byte[pSerializer.BitPacking.ByteLength];
-            }
+
             pSerializer.Serialize(ref Data, Data.Length);
             
             return !pSerializer.Error;

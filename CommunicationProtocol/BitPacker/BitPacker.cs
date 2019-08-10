@@ -117,8 +117,8 @@ namespace CommunicationProtocol
         {
             AlignToNextWriteByte();
             Span<byte> spanByte = new Span<byte>(pData, 0, pLength);
-            Span<uint> spanUint = MemoryMarshal.Cast<byte, uint>(spanByte);
-            Span<uint> bufferUint = new Span<uint>(_buffer, WordIndex, spanUint.Length);
+            int lengthInBufferIndex = BUFFER_BIT_SIZE / 8;
+            Span<uint> bufferUint = new Span<uint>(_buffer, WordIndex, _buffer.Length - WordIndex);
             Span<byte> bufferByte = MemoryMarshal.Cast<uint, byte>(bufferUint).Slice(BitIndex / 8);
             spanByte.CopyTo(bufferByte);
             int bitsAdded = bufferByte.Length * 8;
@@ -128,6 +128,7 @@ namespace CommunicationProtocol
 
         public void AlignToNextWriteByte()
         {
+            PushTempInBuffer();
             int remainingBits = BitIndex % 8;
             if (remainingBits > 0)
                 BitIndex += 8 - remainingBits;

@@ -69,8 +69,8 @@ namespace CommunicationProtocol.Frames
 
             if (FrameSerializer.BitPacking.ByteLength > MTU)
                 SplitPacketIntoFragments();
-
-            AddCrcOnHeader(pPacket.Header);
+            else
+                AddCrcOnHeader(pPacket.Header);
             
             CurrentSequence++;
             _shouldClean = true;
@@ -95,14 +95,14 @@ namespace CommunicationProtocol.Frames
                 packets[i].FragmentID = i;
                 packets[i].NumberOfFragments = nbOfFragments;
 
-                int fragmentedHeaderSize = FrameSerializer.BitPacking.ByteLength;
+                int fragmentedHeaderSize = (int)Math.Ceiling((decimal)(FrameSerializer.BitPacking.BitLength + FragmentedPacket.FRAGMENT_HEADER_SIZE) / 8);
                 int dataSize = MTU - fragmentedHeaderSize;
                 int length = dataSize;
                 if (i == nbOfFragments - 1)
                     length = dataWithoutHeader.Length % MTU;
 
                 packets[i].Data = dataWithoutHeader.Slice(dataSize * i, length).ToArray();
-                packets[i].Serialize(FrameSerializer);
+                packets[i].Serialize(FrameSerializer);                                  // Data
                 AddCrcOnHeader(packets[i].Header);
             }
             return packets;
