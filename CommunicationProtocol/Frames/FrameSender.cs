@@ -87,7 +87,7 @@ namespace CommunicationProtocol.Frames
                 (int)Math.Ceiling((decimal)(FrameSerializer.BitsRequired(0, dFactory.Count() - 1) + // Number of bits required to send the packet type.
                 FragmentedPacket.FRAGMENT_HEADER_SIZE) / 8);                                        // Fragment ID + Number of fragments
             int dataSize = MTU - fragmentedHeaderSize;
-            int nbOfFragments = (int)Math.Ceiling((FrameSerializer.BitPacking.ByteLength - normalHeaderSize) / (decimal)(MTU - fragmentedHeaderSize));
+            int nbOfFragments = (int)Math.Ceiling((FrameSerializer.BitPacking.ByteLength - normalHeaderSize) / (decimal)dataSize);
             Span<byte> data = FrameSerializer.BitPacking.GetByteSpanBuffer();
             Span<byte> dataWithoutHeader = data.Slice(normalHeaderSize);
             FragmentedPacket[] packets = new FragmentedPacket[nbOfFragments];
@@ -104,7 +104,7 @@ namespace CommunicationProtocol.Frames
 
                 int length = dataSize;
                 if (i == nbOfFragments - 1)
-                    length = dataWithoutHeader.Length % (MTU - fragmentedHeaderSize);
+                    length = dataWithoutHeader.Length % dataSize;
 
                 packets[i].Data = dataWithoutHeader.Slice(dataSize * i, length).ToArray();
                 packets[i].Serialize(FrameSerializer);                                  // Data
@@ -115,8 +115,6 @@ namespace CommunicationProtocol.Frames
 
         private void AddCrcOnHeader(PacketHeader pHeader)
         {
-            FrameSerializer.BitPacking.PushTempInBuffer();
-
             byte[] data = FrameSerializer.BitPacking.GetByteBuffer();
             int crcByteLength = CrcCheck.HashSize / 8;
 

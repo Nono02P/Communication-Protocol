@@ -40,9 +40,13 @@ namespace CommunicationProtocol.Frames.Packets
             LogHelper.WriteToFile("End Serialization Check :", this, Program.FileName);
 #endif
                 pSerializer.Serialize(ref checkValue, SERIALIZATION_CHECK_SIZE);
+
                 Debug.Assert(checkValue == SERIALIZATION_CHECK_VALUE);
                 result = checkValue == SERIALIZATION_CHECK_VALUE;
             }
+            if (pSerializer is WriterSerialize)
+                pSerializer.BitPacking.PushTempInBuffer();
+
             return !pSerializer.Error && result;
         }
     }

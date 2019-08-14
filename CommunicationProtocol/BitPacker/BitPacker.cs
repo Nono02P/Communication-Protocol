@@ -66,7 +66,8 @@ namespace CommunicationProtocol
         public static BitPacker FromArray(byte[] pBuffer, bool pPushTempInBuffer = true)
         {
             int length = pBuffer.Length;
-            byte[] b = new byte[length + 4 - (length % 4)];
+            int nbOfBytePerIndex = BUFFER_BIT_SIZE / 8;
+            byte[] b = new byte[length + nbOfBytePerIndex - (length % nbOfBytePerIndex)];
             pBuffer.CopyTo(b, 0);
             Span<uint> spanUint = MemoryMarshal.Cast<byte, uint>(new Span<byte>(b));
             BitPacker result = new BitPacker(spanUint, 8 * length);
@@ -116,11 +117,10 @@ namespace CommunicationProtocol
         {
             AlignToNextWriteByte();
             Span<byte> spanByte = new Span<byte>(pData, 0, pLength);
-            int lengthInBufferIndex = BUFFER_BIT_SIZE / 8;
             Span<uint> bufferUint = new Span<uint>(_buffer, WordIndex, _buffer.Length - WordIndex);
             Span<byte> bufferByte = MemoryMarshal.Cast<uint, byte>(bufferUint).Slice(BitIndex / 8);
             spanByte.CopyTo(bufferByte);
-            int bitsAdded = bufferByte.Length * 8;
+            int bitsAdded = BitIndex + pLength * 8;
             WordIndex += bitsAdded / BUFFER_BIT_SIZE;
             BitIndex = bitsAdded % BUFFER_BIT_SIZE;
         }
@@ -133,19 +133,16 @@ namespace CommunicationProtocol
                 BitIndex += 8 - remainingBits;
         }
 
-        public void PushTempInBuffer(bool pCutEmptyEnd = false)
+        public void PushTempInBuffer()
         {
             if (BitIndex > 0)
             {
-                if (_temp > 0 || !pCutEmptyEnd)
+                _buffer[WordIndex] = (uint)_temp;
+                if (BitIndex >= BUFFER_BIT_SIZE)
                 {
-                    _buffer[WordIndex] = (uint)_temp;
-                    if (BitIndex >= BUFFER_BIT_SIZE)
-                    {
-                        _temp >>= BUFFER_BIT_SIZE;
-                        BitIndex -= BUFFER_BIT_SIZE;
-                        WordIndex++;
-                    }
+                    _temp >>= BUFFER_BIT_SIZE;
+                    BitIndex -= BUFFER_BIT_SIZE;
+                    WordIndex++;
                 }
             }
         }
@@ -224,6 +221,11 @@ namespace CommunicationProtocol
                 int bitsToRemove = 8 - remainingBits;
                 _offsetBitReaded += bitsToRemove;
                 BitIndex -= bitsToRemove;
+                while (BitIndex <= 0)
+                {
+                    WordIndex--;
+                    BitIndex += BUFFER_BIT_SIZE;
+                }
             }
         }
 
@@ -280,7 +282,7 @@ namespace CommunicationProtocol
         #region Transformations
         public byte[] GetByteBuffer(int? pLength = null)
         {
-            return GetByteSpanBuffer(pLength).ToArray();
+             return GetByteSpanBuffer(pLength).ToArray();
         }
 
         public Span<byte> GetByteSpanBuffer(int? pLength = null)
@@ -290,7 +292,7 @@ namespace CommunicationProtocol
             if (pLength.HasValue)
                 size = pLength.Value;
 
-            return MemoryMarshal.Cast<uint, byte>(GetUintSpanBuffer()).Slice(0, size);
+            return MemoryMarshal.Cast<uint, byte>(GetUintSpanBuffer()).Slice((int)Math.Ceiling((decimal)(_offsetBitReaded % BUFFER_BIT_SIZE) / 8), size);
         }
 
         public Span<uint> GetUintSpanBuffer()

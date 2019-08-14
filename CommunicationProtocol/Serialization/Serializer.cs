@@ -1,7 +1,6 @@
 ﻿using CommunicationProtocol.Factories;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Numerics;
 
 namespace CommunicationProtocol.Serialization
@@ -38,6 +37,10 @@ namespace CommunicationProtocol.Serialization
         #endregion Constructor  
 
         #region Serialization Functions
+
+        #region Byte Alignment
+        public abstract void AlignToNextByte();
+        #endregion Byte Alignment
 
         #region Boolean
         public abstract bool Serialize(ref bool pValue);

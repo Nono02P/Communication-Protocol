@@ -5,30 +5,38 @@ using System;
 
 namespace CommunicationProtocol.Frames
 {
-    /*  Not fragmented Packet Type :
-     *  [CRC-32  (32 bits)]
+    #region Normal Packet trame
+    /*  [CRC-32  (32 bits)]
      *  [Sequence (16 bits)]
      *  [Packet Type (Variable depending of number of packet types)]
      *  [Packet Data (Variable length)]
      *  [Packet End Serialization Check (32 bits)]
-     * ====================================================================================
-     *  Fragmented Packet Type :
-     *  [CRC-32  (32 bits)]
+    */
+    #endregion Normal Packet trame  
+    
+    #region Fragmented Packet trame
+    /*  [CRC-32  (32 bits)]
      *  [Sequence (16 bits)]
      *  [Packet Type = 0 (Variable depending of number of packet types)]
      *  [Fragment ID (8 bits)]
      *  [Number of Fragments (8 bits)]
      *  [Packet Type = 0 (Variable depending of number of packet types)]
-     *  [Packet Data (Variable length)]
-     *  [Packet End Serialization Check (32 bits)]
-     */
-
+     *  [Pad zero bits to nearest byte]
+     *  [Fragment Data (Variable length)]
+     *      Fragment Data with an exemple of packet splitted in 3 Fragments :
+     *          1-> [Packet Type (Variable depending of number of packet types)]
+     *          1-> [Splitted Packet Data (Variable length)]
+     *          2-> [Splitted Packet Data (Variable length)]
+     *          3-> [Splitted Packet Data (Variable length)]
+     *          3-> [Packet End Serialization Check (32 bits)]
+    */
+    #endregion Fragmented Packet trame
+    
     public abstract class Frame
     {
         public static int CRC_SIZE = 32;
         public static int SEQUENCE_SIZE = 16;
 
-        //protected int dCrcValue;
         protected PacketFactory dFactory;
         protected Parameters dCrcParameters;
 

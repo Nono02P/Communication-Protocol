@@ -41,6 +41,7 @@ namespace CommunicationProtocol.Frames.Packets
         {
             pSerializer.Serialize(ref FragmentID, FRAGMENT_HEADER_SIZE / 2);
             pSerializer.Serialize(ref NumberOfFragments, FRAGMENT_HEADER_SIZE / 2);
+            pSerializer.AlignToNextByte();
             if (Data == null)
                 Data = new byte[pSerializer.BitPacking.ByteLength];
 

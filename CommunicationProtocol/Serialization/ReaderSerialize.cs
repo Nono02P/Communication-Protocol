@@ -10,6 +10,13 @@ namespace CommunicationProtocol.Serialization
         public ReaderSerialize(int pByteBufferSize = 1024 * 255) : base(pByteBufferSize) { }
         #endregion Constructor  
 
+        #region Byte Alignment
+        public override void AlignToNextByte()
+        {
+            BitPacking.AlignToNextReadByte();
+        }
+        #endregion Byte Alignment
+
         #region Serialization Functions
 
         #region Boolean

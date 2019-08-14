@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Runtime.InteropServices;
 using System.Text;
 
 namespace CommunicationProtocol.Serialization
@@ -10,6 +9,13 @@ namespace CommunicationProtocol.Serialization
         #region Constructor
         public WriterSerialize(int pByteBufferSize = 1024 * 255) : base(pByteBufferSize) { }
         #endregion Constructor  
+
+        #region Byte Alignment
+        public override void AlignToNextByte()
+        {
+            BitPacking.AlignToNextWriteByte();
+        }
+        #endregion Byte Alignment
 
         #region Serialization Functions
 
