@@ -1,6 +1,7 @@
 ﻿using CommunicationProtocol.ExtensionMethods;
 using CommunicationProtocol.Serialization;
 using System;
+using System.Diagnostics;
 using System.Numerics;
 
 namespace CommunicationProtocol
@@ -50,23 +51,25 @@ namespace CommunicationProtocol
             int ammoType = (int)AmmoType;
             if (!pSerializer.Error)
             {
-#if TRACE_LOG
-                LogHelper.WriteToFile("Serialize Loot : ", this, Program.FileName);
-                LogHelper.WriteToFile("     IsActive : ", this, Program.FileName);
+#if TRACE
+                Trace.WriteLine("Serialize Loot : ");
+                Trace.Indent();
+                Trace.WriteLine("IsActive : ");
 #endif
                 pSerializer.Serialize(ref isActive);
-#if TRACE_LOG
-                LogHelper.WriteToFile("     SendPosition : ", this, Program.FileName);
-                LogHelper.WriteToFile("     Position : ", this, Program.FileName);
+
+#if TRACE
+                Trace.WriteLine("SendPosition : ");
 #endif
                 pSerializer.Serialize(ref position, Vector2.Zero, new Vector2(4096), ref _sendPosition);
-#if TRACE_LOG
-                LogHelper.WriteToFile("     SendNbOfAmmo : ", this, Program.FileName);
-                LogHelper.WriteToFile("     NbOfAmmo : ", this, Program.FileName);
+
+#if TRACE
+                Trace.WriteLine("SendNbOfAmmo : ");
 #endif
                 pSerializer.Serialize(ref nbOfAmmo, 0, 100, ref _sendNbOfAmmo);
-#if TRACE_LOG
-                LogHelper.WriteToFile("     AmmoType : ", this, Program.FileName);
+
+#if TRACE
+                Trace.WriteLine("AmmoType : ");
 #endif
                 pSerializer.Serialize(ref ammoType, 0, 1);
             }
@@ -82,8 +85,9 @@ namespace CommunicationProtocol
 
                 AmmoType = (eAmmoType)ammoType;
             }
-#if TRACE_LOG
-            LogHelper.WriteToFile("End of Bullet : ", this, Program.FileName);
+#if TRACE
+            Trace.Unindent();
+            Trace.WriteLine("End of Bullet : ");
 #endif
             ShouldBeSend = pSerializer.Error;
             return pSerializer.Error;

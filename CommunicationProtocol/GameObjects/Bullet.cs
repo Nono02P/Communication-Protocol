@@ -1,6 +1,7 @@
 ﻿using CommunicationProtocol.ExtensionMethods;
 using CommunicationProtocol.Serialization;
 using System;
+using System.Diagnostics;
 using System.Numerics;
 
 namespace CommunicationProtocol
@@ -76,19 +77,20 @@ namespace CommunicationProtocol
 
             if (!pSerializer.Error)
             {
-#if TRACE_LOG
-                LogHelper.WriteToFile("Serialize Bullet : ", this, Program.FileName);
-                LogHelper.WriteToFile("     SendPosition : ", this, Program.FileName);
-                LogHelper.WriteToFile("     Position : ", this, Program.FileName);
+#if TRACE
+                Trace.WriteLine("Serialize Bullet : ");
+                Trace.Indent();
+                Trace.WriteLine("SendPosition : ");
 #endif
                 pSerializer.Serialize(ref position, Vector2.Zero, new Vector2(4096), ref _sendPosition);
-#if TRACE_LOG
-                LogHelper.WriteToFile("     SendVelocity : ", this, Program.FileName);
-                LogHelper.WriteToFile("     Velocity : ", this, Program.FileName);
+
+#if TRACE
+                Trace.WriteLine("SendVelocity : ");
 #endif
                 pSerializer.Serialize(ref velocity, Vector2.Zero, new Vector2(30), ref _sendVelocity);
-#if TRACE_LOG
-                LogHelper.WriteToFile("     Type : ", this, Program.FileName);
+
+#if TRACE
+                Trace.WriteLine("Type : ");
 #endif
                 pSerializer.Serialize(ref type, 0, 1);
             }
@@ -99,11 +101,12 @@ namespace CommunicationProtocol
                     Position = position;
                 if (_sendVelocity)
                     Velocity = velocity;
-                
+
                 Type = (eAmmoType)type;
             }
-#if TRACE_LOG
-            LogHelper.WriteToFile("End of Bullet : ", this, Program.FileName);
+#if TRACE
+            Trace.Unindent();
+            Trace.WriteLine("End of Bullet : ");
 #endif
             ShouldBeSend = pSerializer.Error;
             return pSerializer.Error;

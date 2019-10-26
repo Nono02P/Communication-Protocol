@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Text;
 
 namespace CommunicationProtocol.Serialization
@@ -26,8 +27,10 @@ namespace CommunicationProtocol.Serialization
             {
                 uint val = BitPacking.ReadValue(1);
                 pValue = val == 1;
-#if TRACE_LOG
-                LogHelper.WriteToFile("Read boolean : " + val, this, Program.FileName);
+#if TRACE
+                Trace.Indent();
+                Trace.WriteLine("Read boolean : " + val);
+                Trace.Unindent();
 #endif
             }
             return Error;
@@ -50,9 +53,12 @@ namespace CommunicationProtocol.Serialization
                 int requiredBits = BitsRequired(pMin, pMax);
                 uint mappedValue = BitPacking.ReadValue(requiredBits);
                 int value = (int)mappedValue + pMin;
-#if TRACE_LOG
-                LogHelper.WriteToFile("Read integer : " + mappedValue + " (" + requiredBits + "Bits)", this, Program.FileName);
+#if TRACE
+                Trace.Indent();
+                Trace.WriteLine("Read integer : " + mappedValue + " (" + requiredBits + "Bits)");
+                Trace.Unindent();
 #endif
+
                 if (value >= pMin && value <= pMax)
                     pValue = value;
                 else
@@ -66,8 +72,10 @@ namespace CommunicationProtocol.Serialization
             if (!Error)
             {
                 pValue = (int)BitPacking.ReadValue(pNbOfBits);
-#if TRACE_LOG
-                LogHelper.WriteToFile("Read integer : " + pValue + " (" + pNbOfBits + "Bits)", this, Program.FileName);
+#if TRACE
+                Trace.Indent();
+                Trace.WriteLine("Read integer : " + pValue + " (" + pNbOfBits + "Bits)");
+                Trace.Unindent();
 #endif
             }
             return Error;
@@ -97,9 +105,11 @@ namespace CommunicationProtocol.Serialization
             {
                 int requiredBits = BitsRequired(0, pLengthMax);
                 int length = (int)BitPacking.ReadValue(requiredBits);
-#if TRACE_LOG
-                LogHelper.WriteToFile("Read string length : " + length + " (" + requiredBits + "Bits)", this, Program.FileName);
+#if TRACE
+                Trace.Indent();
+                Trace.WriteLine("Read string length : " + length + " (" + requiredBits + "Bits)");
 #endif
+
                 if (length <= pLengthMax)
                 {
                     if (length > 0)
@@ -110,8 +120,8 @@ namespace CommunicationProtocol.Serialization
                             data[i] = (byte)BitPacking.ReadValue(8);
                         }
                         pValue = Encoding.UTF8.GetString(data);
-#if TRACE_LOG
-                        LogHelper.WriteToFile("Read string data : " + pValue, this, Program.FileName);
+#if TRACE
+                        Trace.WriteLine("Read string data : " + pValue);
 #endif
                     }
                     else
@@ -121,6 +131,9 @@ namespace CommunicationProtocol.Serialization
                 }
                 else
                     Error = true;
+#if TRACE
+                Trace.Unindent();
+#endif
             }
             return Error;
         }
@@ -132,8 +145,9 @@ namespace CommunicationProtocol.Serialization
             if (!Error)
             {
                 int nbOfObjects = 0;
-#if TRACE_LOG
-                LogHelper.WriteToFile("Read List<Objects> Counter : ", this, Program.FileName);
+#if TRACE
+                Trace.Indent();
+                Trace.WriteLine("Read List<Objects> Counter : ");
 #endif
                 Serialize(ref nbOfObjects, 0, pNbMaxObjects);
 
@@ -143,8 +157,10 @@ namespace CommunicationProtocol.Serialization
                 if (nbOfObjects > 0)
                 {
                     int difBitSize = (int)BitPacking.ReadValue(d_INDEX_DIFFERENCE_BIT_ENCODING);    // Number of bits on which will be encoded the index difference
-#if TRACE_LOG
-                    LogHelper.WriteToFile("Read List<Objects> difference Bit Encoding : " + difBitSize + " (" + difBitEncoding + "Bits)", this, Program.FileName);
+#if TRACE
+                    Trace.Indent();
+                    Trace.WriteLine("Read List<Objects> difference Bit Encoding : " + difBitSize + " (" + d_INDEX_DIFFERENCE_BIT_ENCODING + "Bits)");
+                    Trace.Indent();
 #endif
                     int index = 0;
                     for (int i = 0; i < nbOfObjects; i++)
@@ -153,18 +169,18 @@ namespace CommunicationProtocol.Serialization
                         {
                             int dif = (int)BitPacking.ReadValue(difBitSize);
                             index += dif;                                               // Index difference with the previous object.
-#if TRACE_LOG
-                            LogHelper.WriteToFile("Read List<Objects> difference : ", this, Program.FileName);
-                            LogHelper.WriteToFile("Read integer : " + dif + " (" + difBitSize + "Bits)", this, Program.FileName);
-                            LogHelper.WriteToFile("Read List<Objects> index : " + index, this, Program.FileName);
+#if TRACE
+                            Trace.WriteLine("Read List<Objects> difference : ");
+                            Trace.WriteLine("Read integer : " + dif + " (" + difBitSize + "Bits)");
+                            Trace.WriteLine("Read List<Objects> index : " + index);
 #endif
                         }
 
                         int objectID = 0;
                         if (dFactory.Count() - 1 > 0)
                         {
-#if TRACE_LOG
-                            LogHelper.WriteToFile("Read List<Objects> Object ID : ", this, Program.FileName);
+#if TRACE
+                            Trace.WriteLine("Read List<Objects> Object ID : ");
 #endif
                             Serialize(ref objectID, 0, dFactory.Count() - 1);           // Object ID (If there is more than 1 serializable object)
                         }
@@ -174,8 +190,8 @@ namespace CommunicationProtocol.Serialization
                             obj = pObjects[index];
                             if (obj.GetType() == dFactory.GetType(objectID))
                             {
-#if TRACE_LOG
-                                LogHelper.WriteToFile("Read List<Objects> Data on object already in list : ", this, Program.FileName);
+#if TRACE
+                                Trace.WriteLine("Read List<Objects> Data on object already in list : ");
 #endif
                                 Error |= obj.Serialize(this);
                             }
@@ -186,8 +202,9 @@ namespace CommunicationProtocol.Serialization
                         {
                             obj = dFactory.CreateInstance<T>(objectID);
                             pOnObjectCreation?.Invoke(obj);
-#if TRACE_LOG
-                            LogHelper.WriteToFile("Read List<Objects> Data on Created object : ", this, Program.FileName);
+
+#if TRACE
+                            Trace.WriteLine("Read List<Objects> Data on Created object : ");
 #endif
                             Error |= obj.Serialize(this);
                             if (pAddMissingElements && pObjects.Count == index && !Error)
@@ -197,6 +214,9 @@ namespace CommunicationProtocol.Serialization
                         }
                     }
                 }
+#if TRACE
+                Trace.IndentLevel -= 2;
+#endif
             }
             return Error;
         }

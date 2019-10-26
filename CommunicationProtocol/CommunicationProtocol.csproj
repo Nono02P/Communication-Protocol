@@ -8,6 +8,9 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
     <AllowUnsafeBlocks>false</AllowUnsafeBlocks>
+    <Optimize>false</Optimize>
+    <DocumentationFile></DocumentationFile>
+    <DefineConstants></DefineConstants>
   </PropertyGroup>
 
 </Project>

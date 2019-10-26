@@ -2,6 +2,7 @@
 using CommunicationProtocol.Serialization;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 
 namespace CommunicationProtocol.Frames.Packets
 {
@@ -55,12 +56,14 @@ namespace CommunicationProtocol.Frames.Packets
             if (Actors == null)
                 Actors = new List<IActor>();
 
-#if TRACE_LOG
-            LogHelper.WriteToFile("Serialize PacketB : ", this, Program.FileName);
+#if TRACE
+            Trace.WriteLine("Serialize PacketB : ");
+            Trace.Indent();
 #endif
             pSerializer.Serialize(Actors, NB_MAX_OF_ACTORS, true);
-#if TRACE_LOG
-            LogHelper.WriteToFile("End of PacketB : ", this, Program.FileName);
+#if TRACE
+            Trace.Unindent();
+            Trace.WriteLine("End of PacketB : ");
 #endif
         }
     }

@@ -1,4 +1,6 @@
-﻿using CommunicationProtocol.CRC;
+﻿#undef DEBUG
+//#undef TRACE
+using CommunicationProtocol.CRC;
 using CommunicationProtocol.Factories;
 using CommunicationProtocol.Frames;
 using CommunicationProtocol.Frames.Packets;
@@ -6,26 +8,79 @@ using CommunicationProtocol.Serialization;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Numerics;
-
 
 namespace CommunicationProtocol
 {
     class Program
     {
-        public static string FileName;
+        private enum eListener : byte
+        {
+            Sender, 
+            Receiver
+        }
+
+        private static bool _continue = true;
+        private static TextWriterTraceListener _sender;
+        private static TextWriterTraceListener _receiver;
+        
         public static Random Rnd = new Random(1);
         public static int? StopOnSequence = null;
         
         static void Main(string[] args)
         {
+#if DEBUG
+            Trace.Listeners.Add(new TextWriterTraceListener(Console.Out));
+#endif
+#if TRACE
+            Directory.CreateDirectory("Log/");
+            /*
+            _sender = new TextWriterTraceListener(File.CreateText("Log/Sender.log"));
+            _receiver = new TextWriterTraceListener(File.CreateText("Log/Receiver.Log"));
+            */
+            _sender = new TextWriterTraceListener(File.CreateText("Log/Sender.log"));
+            _receiver = new TextWriterTraceListener(File.CreateText("Log/Receiver.Log"));
+
+#endif
+
             TestFrames();
+            _sender.Flush();
+            _sender.Close();
+            _sender.Dispose();
+
+            _receiver.Flush();
+            _receiver.Close();
+            _receiver.Dispose();
+
             //TestSerializerPacketA();
             //TestSerializerPacketB();
             //TestBitPacker();
             //TestCRC();
             //Devlog();
             Console.Read();
+
+        }
+
+        private static void SwapListeners(eListener pDesiredListener)
+        {
+#if TRACE
+            switch (pDesiredListener)
+            {
+                case eListener.Sender:
+                    //Trace.Flush();
+                    Trace.Listeners.Remove(_receiver);
+                    Trace.Listeners.Add(_sender);
+                    break;
+                case eListener.Receiver:
+                    //Trace.Flush();
+                    Trace.Listeners.Remove(_sender);
+                    Trace.Listeners.Add(_receiver);
+                    break;
+                default:
+                    break;
+            }
+#endif
         }
 
         private static void Devlog()
@@ -50,19 +105,12 @@ namespace CommunicationProtocol
         #region Frames
         private static void TestFrames()
         {
-#if TRACE_LOG
-            FileName = "Receiver";
-            LogHelper.WriteToFile("Starting", "Program", FileName, true);
-            FileName = "Sender";
-            LogHelper.WriteToFile("Starting", "Program", FileName, true);
-#endif
             FrameSender sender = new FrameSender();
             ulong counter = 0;
-            while (true)
+            while (_continue)
             {
-                FileName = "Sender";
-#if TRACE_LOG
-                LogHelper.WriteToFile("Prepare to sending packet.", "Program", FileName, true);
+#if TRACE
+                SwapListeners(eListener.Sender);
 #endif
                 List<Packet> sendPackets = new List<Packet>();
                 while (sendPackets.Count == 0) //for (int i = 0; i < 1; i++)
@@ -75,10 +123,9 @@ namespace CommunicationProtocol
 
                 byte[] data = sender.Send();
 
-                FileName = "Receiver";
                 FrameReceiver receiver = new FrameReceiver();
-#if TRACE_LOG
-                LogHelper.WriteToFile("Prepare to receive packet.", "Program", FileName, true);
+#if TRACE
+                SwapListeners(eListener.Receiver);
 #endif
                 List<IPacket> readPackets = receiver.Receive(data);
                 Debug.Assert(sendPackets.Count == readPackets.Count);
@@ -86,7 +133,8 @@ namespace CommunicationProtocol
                 {
                     IPacket itemA = sendPackets[i];
                     IPacket itemB = readPackets[i];
-                    Debug.Assert(itemA.Equals(itemB));
+                    if (!(itemB is FragmentedPacket))
+                        Debug.Assert(itemA.Equals(itemB));
                 }
                 Console.WriteLine(counter);
                 counter++;

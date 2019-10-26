@@ -2,6 +2,7 @@
 using CommunicationProtocol.Serialization;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Numerics;
 
 namespace CommunicationProtocol
@@ -87,24 +88,25 @@ namespace CommunicationProtocol
 
             if (!pSerializer.Error)
             {
-#if TRACE_LOG
-                LogHelper.WriteToFile("Serialize Tank : ", this, Program.FileName);
-                LogHelper.WriteToFile("     Bullets : ", this, Program.FileName);
+#if TRACE
+                Trace.WriteLine("Serialize Tank : ");
+                Trace.Indent();
+                Trace.WriteLine("Bullets : ");
 #endif
                 pSerializer.Serialize(Bullets, 255, true, delegate (Bullet b) { b.Parent = this; });
-#if TRACE_LOG
-                LogHelper.WriteToFile("     SendName : ", this, Program.FileName);
-                    LogHelper.WriteToFile("     Name : ", this, Program.FileName);
+
+#if TRACE
+                Trace.WriteLine("SendName : ");
 #endif
                 pSerializer.Serialize(ref name, 50, ref _sendName);
-#if TRACE_LOG
-                LogHelper.WriteToFile("     SendPosition : ", this, Program.FileName);
-                    LogHelper.WriteToFile("     Position : ", this, Program.FileName);
+
+#if TRACE
+                Trace.WriteLine("SendPosition : ");
 #endif
                 pSerializer.Serialize(ref position, Vector2.Zero, new Vector2(4096), ref _sendPosition);
-#if TRACE_LOG
-                LogHelper.WriteToFile("     SendLife : ", this, Program.FileName);
-                    LogHelper.WriteToFile("     Life : ", this, Program.FileName);
+
+#if TRACE
+                Trace.WriteLine("SendLife : ");
 #endif
                 pSerializer.Serialize(ref life, 0, 100, ref _sendLife);
             }
@@ -118,9 +120,11 @@ namespace CommunicationProtocol
                 if (_sendLife)
                     Life = life;
             }
-#if TRACE_LOG
-            LogHelper.WriteToFile("End of Tank : ", this, Program.FileName);
+#if TRACE
+            Trace.Unindent();
+            Trace.WriteLine("End of Tank : ");
 #endif
+
             ShouldBeSend = pSerializer.Error;
             return pSerializer.Error;
         }

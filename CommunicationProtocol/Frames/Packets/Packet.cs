@@ -36,8 +36,8 @@ namespace CommunicationProtocol.Frames.Packets
             if (dUseSerializationCheck)
             {
                 int checkValue = SERIALIZATION_CHECK_VALUE;
-#if TRACE_LOG
-            LogHelper.WriteToFile("End Serialization Check :", this, Program.FileName);
+#if TRACE
+                Trace.WriteLine("End Serialization Check:");
 #endif
                 pSerializer.Serialize(ref checkValue, SERIALIZATION_CHECK_SIZE);
 

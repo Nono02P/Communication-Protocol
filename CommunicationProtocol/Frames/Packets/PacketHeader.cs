@@ -1,5 +1,6 @@
 ﻿using CommunicationProtocol.Serialization;
 using System;
+using System.Diagnostics;
 
 namespace CommunicationProtocol.Frames.Packets
 {
@@ -18,10 +19,24 @@ namespace CommunicationProtocol.Frames.Packets
         {
             int crc = (int)Crc;
             int sequence = Sequence;
+#if TRACE
+            Trace.WriteLine("Serialize PacketHeader :");
+            Trace.Indent();
+            Trace.WriteLine("CRC :");
+#endif
             pSerializer.Serialize(ref crc, Frame.CRC_SIZE);
+
+#if TRACE
+            Trace.WriteLine("Sequence :");
+#endif
             pSerializer.Serialize(ref sequence, Frame.SEQUENCE_SIZE);
             Crc = (uint)crc;
             Sequence = (ushort)sequence;
+
+#if TRACE
+            Trace.Unindent();
+            Trace.WriteLine("End of PacketHeader :");
+#endif
         }
 
         public void EndSerialize(Serializer pSerializer)

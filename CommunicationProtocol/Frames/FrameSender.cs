@@ -6,7 +6,7 @@ using System.Diagnostics;
 
 namespace CommunicationProtocol.Frames
 {
-    public class FrameSender : Frame
+    public sealed class FrameSender : Frame
     {
         /// <summary>
         /// Maximum Transmission Unit in bytes.
@@ -19,13 +19,6 @@ namespace CommunicationProtocol.Frames
             FrameSerializer = new WriterSerialize();
             //PrepareFrame();
         }
-
-#if TRACE_LOG
-        private void Log(string pMessage, bool pEraseFile = false)
-        {
-            LogHelper.WriteToFile(pMessage, this, Program.FileName, pEraseFile);
-        }
-#endif
 
         private PacketHeader PrepareFrame(bool pClearBitPacker = false)
         {
@@ -45,12 +38,14 @@ namespace CommunicationProtocol.Frames
             Debug.Assert(!Program.StopOnSequence.HasValue || CurrentSequence != Program.StopOnSequence.Value);
             int bitCounter = FrameSerializer.BitPacking.BitLength;
             int id = dFactory.GetID(pPacket);
-#if TRACE_LOG
-            Log("Packet ID : ");
+
+#if TRACE
+            Trace.WriteLine("Packet ID : ");
 #endif
             FrameSerializer.Serialize(ref id, 0, dFactory.Count() - 1);                              // Packet ID
-#if TRACE_LOG
-            Log("Packet Data : ");
+
+#if TRACE
+            Trace.WriteLine("Packet Data : ");
 #endif
             if (!pPacket.Serialize(FrameSerializer))                                                 // Data
             {
@@ -88,8 +83,7 @@ namespace CommunicationProtocol.Frames
                 FragmentedPacket.FRAGMENT_HEADER_SIZE) / 8);                                        // Fragment ID + Number of fragments
             int dataSize = MTU - fragmentedHeaderSize;
             int nbOfFragments = (int)Math.Ceiling((FrameSerializer.BitPacking.ByteLength - normalHeaderSize) / (decimal)dataSize);
-            Span<byte> data = FrameSerializer.BitPacking.GetByteSpanBuffer();
-            Span<byte> dataWithoutHeader = data.Slice(normalHeaderSize);
+            Span<byte> dataWithoutHeader = FrameSerializer.BitPacking.GetByteSpanBuffer().Slice(normalHeaderSize);
             FragmentedPacket[] packets = new FragmentedPacket[nbOfFragments];
             for (int i = 0; i < nbOfFragments; i++)
             {

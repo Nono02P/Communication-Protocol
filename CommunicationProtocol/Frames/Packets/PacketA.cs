@@ -1,5 +1,6 @@
 ﻿using CommunicationProtocol.ExtensionMethods;
 using CommunicationProtocol.Serialization;
+using System.Diagnostics;
 using System.Numerics;
 
 namespace CommunicationProtocol.Frames.Packets
@@ -40,21 +41,26 @@ namespace CommunicationProtocol.Frames.Packets
 
         protected override void SerializeData(Serializer pSerializer)
         {
-#if TRACE_LOG
-            LogHelper.WriteToFile("Serialize PacketA : ", this, Program.FileName);
-            LogHelper.WriteToFile("     Position : ", this, Program.FileName);
+#if TRACE
+            Trace.WriteLine("Serialize PacketA : ");
+            Trace.Indent();
+            Trace.WriteLine("Position : ");
 #endif
             pSerializer.Serialize(ref Position, new Vector3(-30, 0, 0), new Vector3(100, 700, 190), _POSITION_RESOLUTION);
-#if TRACE_LOG
-            LogHelper.WriteToFile("     f : ", this, Program.FileName);
+
+#if TRACE
+            Trace.WriteLine("f : ");
 #endif
             pSerializer.Serialize(ref f, 0, 100f, _F_RESOLUTION);
-#if TRACE_LOG
-            LogHelper.WriteToFile("     Comment : ", this, Program.FileName);
+
+#if TRACE
+            Trace.WriteLine("Comment : ");
 #endif
             pSerializer.Serialize(ref comment, 16);
-#if TRACE_LOG
-            LogHelper.WriteToFile("End of PacketA : ", this, Program.FileName);
+
+#if TRACE
+            Trace.Unindent();
+            Trace.WriteLine("End of PacketA : ");
 #endif
         }
     }
